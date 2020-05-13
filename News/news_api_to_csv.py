@@ -1,9 +1,9 @@
 from datetime import timedelta, datetime
 from dotenv import load_dotenv
-import os
 import pprint
 import pandas as pd
 import requests
+import os
 
 
 load_dotenv()
@@ -81,7 +81,7 @@ def get_articles(file):
     return article_results
         
 
-# Convert the wildfire scrape into customized dataframes 
+# Convert the article scrape into customized dataframes 
 corona_response = pd.DataFrame(get_articles(corona_response))
 covid_response = pd.DataFrame(get_articles(covid_response))
 #<Misc> = pd.DataFrame(get_articles(<Misc>))
