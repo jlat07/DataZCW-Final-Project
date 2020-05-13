@@ -25,13 +25,6 @@ class Tweets(Base):
     time_stamp  = Column(Integer)
     state = Column(String(300))
 
-def get_state(loc_name):
-    locs = loc_name.split(",")
-    if "USA" in loc_name:
-        return locs[0]
-    else:
-        return states.get(locs[1].strip())
-
 states = {
     'AK': 'Alaska',
     'AL': 'Alabama',
@@ -92,20 +85,33 @@ states = {
     'WY': 'Wyoming'
 }
 
+
+def get_state(loc_name):
+    locs = loc_name.split(",")
+    if len(locs) > 1:
+        if "USA" == locs[1].strip():
+            return locs[0]
+        elif locs[1].strip() in states.keys(): 
+            return states.get(locs[1].strip())
+
+
+
 for message in consumer:
-    print("received")
     message = message.value
-    tweet_id = message.get("id")
-    name = message.get("user").get("name")
-    text = message.get("text")
-    place = message.get("place")
-    location = place.get("full_name")
-    bounding = place.get("bounding_box").get("coordinates")
-    time_stamp = message.get("timestamp_ms")
-    state = get_state(location)
-    message_sql = Tweets(tweet_id=tweet_id, name=name, text=text, location = location, bounding= bounding, time_stamp = time_stamp, state = state)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    session.add(message_sql)
-    session.commit()
+    full_name = get_state(message.get("place").get("full_name"))
+    if full_name is not None:
+        print("received")
+        tweet_id = message.get("id")
+        name = message.get("user").get("name")
+        text = message.get("text")
+        place = message.get("place")
+        location = place.get("full_name")
+        bounding = str(place.get("bounding_box").get("coordinates"))
+        time_stamp = message.get("timestamp_ms")
+        state = full_name
+        message_sql = Tweets(tweet_id=tweet_id, name=name, text=text, location = location, bounding= bounding, time_stamp = time_stamp, state = state)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        session.add(message_sql)
+        session.commit()
 
