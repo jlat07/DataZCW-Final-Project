@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import csv 
 
 # file object is created 
-file_ob = open(r"/Users/jthompson/dev/DataZCW-Final-Project/Data/YouTube/Youtube04-Eminem.csv") 
+file_ob = open(r"/Users/jthompson/dev/DataZCW-Final-Project/Data/twitter_data_analysis2020-05-09-18.csv") 
 
 # reader object is created 
 reader_ob = csv.reader(file_ob) 
@@ -25,9 +25,12 @@ for row in reader_contents :
 		# concatenate the words 
 		text = text + " " + word 
 
-# remove Python , Matplotlib , Geeks Words from WordCloud . 
-wordcloud = WordCloud(width=480, height=480, 
-			stopwords=["Python", "Matplotlib","Geeks"]).generate(text) 
+# stopwords = set(STOPWORDS)
+stopwords =set(["https", "the","for", "co", "south africa", "SouthAfrica", "more", "than", "has", "been", "to"])
+
+wordcloud = WordCloud(width=480, height=480,
+			max_words = 200,
+			stopwords= stopwords).generate(text) 
 
 # plot the WordCloud image 
 plt.figure() 

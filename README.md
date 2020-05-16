@@ -1,3 +1,11 @@
+# NLP Covid-19 Sentiment Pipeline
+
+For our final project at Zip Code Wilmington, we chose to utilize our skills to extract data from News Api articles, and process tweets from Twitter's streaming API using Kafka. We store that data into a Database, then clean the data with Spark. Run the data through an NLP model to determine sentiment. Finally view the outcome on a custom Dashboard.  
+
+![Pipeline](NLP_covid_pipeline.png) 
+---
+*(original project requirements)*  
+  
 # DataZCW-Final-Project
 capstone project for ZCW Data's course.
 
