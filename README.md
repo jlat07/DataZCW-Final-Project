@@ -2,14 +2,15 @@
 
 For our final project at Zip Code Wilmington, we chose to utilize our skills to extract data from News Api articles, and process tweets from Twitter's streaming API using Kafka. We store that data into a Database, then clean the data with Spark. Run the data through an NLP model to determine sentiment. Finally view the outcome on a custom Dashboard.  
 
-![Pipeline](NLP_covid_pipeline.png) 
----
-*(original project requirements)*  
+![Pipeline](Images/NLP_covid_pipeline.png) 
   
-# DataZCW-Final-Project
+___
+*(original project requirements below)*  
+  
+## DataZCW-Final-Project
 capstone project for ZCW Data's course.
 
-## Final Group Project Possibles
+### Final Group Project Possibles
 
 - How To Build a Neural Network to Recognize Handwritten Digits with TensorFlow
   - ye olde scanning chestnut
@@ -29,7 +30,7 @@ capstone project for ZCW Data's course.
   - Google images
   - popularity or relevance measures
 
-## Group Size
+### Group Size
 
 Each group should 2-4 people. Effort should be mostly
 Data Engineering, but at the end, do some actaul Data Science.
@@ -69,7 +70,7 @@ the project. You should be able to answer those questions._
 - Make it pretty.
 - Add a "slide deck" of project work, overall structure, and status of milestones.
   
-  ## Tech choices
+  ### Tech choices
   
   All tech choices will be approved by instructors. 
   Any tech we've studied is fair game for use.
