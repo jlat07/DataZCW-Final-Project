@@ -25,6 +25,16 @@ class Tweets(Base):
     time_stamp  = Column(Integer)
     state = Column(String(300))
 
+class Tweet_record(Base):
+     __tablename__ = 'twitter_records'
+     tweet_id = Column(Integer, primary_key=True, nullable=False)
+     name = Column(String(250))
+     text = Column(String(250))
+     location = Column(String(250))
+     bounding = Column(String(300))
+     time_stamp  = Column(Integer)
+     state = Column(String(300))
+
 states = {
     'AK': 'Alaska',
     'AL': 'Alabama',
@@ -110,8 +120,10 @@ for message in consumer:
         time_stamp = message.get("timestamp_ms")
         state = full_name
         message_sql = Tweets(tweet_id=tweet_id, name=name, text=text, location = location, bounding= bounding, time_stamp = time_stamp, state = state)
+        record_sql = Tweet_record(tweet_id=tweet_id, name=name, text=text, location = location, bounding= bounding, time_stamp = time_stamp, state = state)
         Session = sessionmaker(bind=engine)
         session = Session()
         session.add(message_sql)
+        session.add(record_sql)
         session.commit()
 
