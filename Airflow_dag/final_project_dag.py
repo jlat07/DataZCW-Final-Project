@@ -31,30 +31,31 @@ dag = DAG(
 	schedule_interval = timedelta(days = 7)
 	)
 
-#Gather twitter data
 
 c = BaseHook.get_connection('local_mysql')
 
 t1 = bash_operator(
-	task_id="get_.sql_final_tweets",
-	bash_command = ("mysqldump -u " + str(c.login)+" -p"+str(c.password)+" twitter > ~/Desktop/test.sql"),
+	task_id="set_up_sql_tables",
+	bash_command = ("mysql -u " + str(c.login)+" -p"+str(c.password)+" < ../sqlsetup.sql"),
 	dag = dag)
-
-#Delete tweets in most recent batch extraction
-t2 = MySqlOperator(
-	task_id = "delete_old_tweets",
-	sql = "TRUNCATE twitter_stream",
-	mysql_conn_id = 'local_mysql',
-	database = "twitter")
 
 #Clean twitter Data
 
 def clean_tweets()
 	pass
 
-t3 = python_operator(task_id = "clean_tweets",
+t2 = python_operator(task_id = "clean_tweets",
 	python_callable = clean_tweets,
 	dag = dag)
+
+#Delete tweets in most recent batch extraction
+t3 = MySqlOperator(
+	task_id = "delete_old_tweets",
+	sql = "TRUNCATE twitter_stream",
+	mysql_conn_id = 'local_mysql',
+	database = "twitter")
+
+
 
 
 #Pass Cleaned Tweets to NLP
