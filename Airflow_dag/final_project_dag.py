@@ -1,21 +1,40 @@
 #import datadotworld as dw
-import pandas as pd
-import pickle
-from datetime import timedelta
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash_operator import BashOperator
+#import papermill as pm
 #from airflow.operators.papermill_operator import PapermillOperator
 #from airflow.operators.postgres_operator import PostgresOperator
 #from airflow.operators.postgres_operator import PostgresHook
+from airflow.operators.python_operator import PythonOperator
+from airflow.operators.bash_operator import BashOperator
+from airflow import DAG
 from airflow.utils.dates import days_ago
-#from datetime import datetime
-#import sqlalchemy
-#import pymysql
-#import papermill as pm
 import airflow.hooks.S3_hook
 from airflow.hooks.base_hook import BaseHook
 from airflow.providers.mysql.operators.mysql import MySqlOperator
+import pandas as pd
+import pickle
+from datetime import timedelta
+from datetime import datetime
+import sqlalchemy
+from sqlalchemy import create_engine
+import pymysql
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import sessionmaker
+import requests
+import os
+from datetime import date
+from newsapi import NewsApiClient
+import re
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
+import nltk
+analyser = SentimentIntensityAnalyzer()
+stop_words = list(set(stopwords.words('english')))
+nltk.download('stopwords')
+nltk.download('punkt')
+
 
 default_args = {
     'owner': 'James Kocher',
@@ -31,68 +50,87 @@ dag = DAG(
 	schedule_interval = timedelta(days = 7)
 	)
 
-#Gather twitter data
 
 c = BaseHook.get_connection('local_mysql')
+engine = create_engine('mysql+pymysql://root:zipcoder@localhost/News')
+
+#set up twitter database
 
 t1 = bash_operator(
-	task_id="get_.sql_final_tweets",
-	bash_command = ("mysqldump -u " + str(c.login)+" -p"+str(c.password)+" twitter > ~/Desktop/test.sql"),
+	task_id="set_up_sql_tables",
+	bash_command = ("mysql -u " + str(c.login)+" -p"+str(c.password)+" < ../twittersetup.sql"),
 	dag = dag)
 
-#Delete tweets in most recent batch extraction
-t2 = MySqlOperator(
-	task_id = "delete_old_tweets",
-	sql = "TRUNCATE twitter_stream",
-	mysql_conn_id = 'local_mysql',
-	database = "twitter")
+#set up news database
 
-#Clean twitter Data
-
-def clean_tweets()
-	pass
-
-t3 = python_operator(task_id = "clean_tweets",
-	python_callable = clean_tweets,
+t2 = bash_operator(
+	task_id="set_up_sql_tables",
+	bash_command = ("mysql -u " + str(c.login)+" -p"+str(c.password)+" < ../newssetup.sql"),
 	dag = dag)
 
+news_api_key = 'e5c1081b366a416caa370c85bb04d392'
 
-#Pass Cleaned Tweets to NLP
-def nlp_tweets():
-	pass
+Base = declarative_base()
 
-t4 = python_operator(task_id = "NLP_Tweets"
-	python_callable = nlp_Tweets,
-	dag = dag)
+class articles(Base):
+    __tablename__ = 'news'
+    author = Column(String(250))
+    title = Column(String(500))
+    content = Column(String(4294967294))
+    date  = Column(Integer)
+    sentiment = Column(String(50))
+    score = Column(String(50))
+    id = Column(Integer, primary_key=True)
 
-#Save results of NLP
-
-def NLP_tweets_toDB():
-	pass
-
-t5 = python_operator(task_id = "NLP_Tweet_Results_toDB"
-	python_callable = nlp_Tweets,
-	dag = dag)
+newsapi = NewsApiClient(api_key = news_api_key)
 
 #Collect News Data
-t6 = bash_operator(
-	task_id="get_.sql_final_tweets",
-	bash_command = ("mysqldump -u " + str(c.login)+" -p"+str(c.password)+" news > ~/Desktop/test.sql"),
-	dag = dag)
 
-#Delete News in most recent batch extraction
-t7 = MySqlOperator(
-	task_id = "delete_old_tweets",
-	sql = "TRUNCATE news_stream",
-	mysql_conn_id = 'local_mysql',
-	database = "news")
+def add_sentiment(tweet):
+    tweet = re.sub(r'[^\w\s]', '', tweet)
+    words = word_tokenize(tweet, "english", True)
+    filtered = [w for w in words if not w in stop_words]
+    score = analyser.polarity_scores(" ".join(filtered))
+    if 0.0 < score['compound'] <= 1.0:
+        return 'Positive'
+    elif 0.0 > score['compound'] >= -1.0:
+        return 'Negative'
+    elif score['compound'] == 0.0:
+        return 'Neutral'
 
-#Clean News Data
+def add_score(tweet):
+    tweet = re.sub(r'[^\w\s]', '', tweet)
+    words = word_tokenize(tweet, "english", True)
+    filtered = [w for w in words if not w in stop_words]
+    score = analyser.polarity_scores(" ".join(filtered))
+    return (score['compound'])
 
-def clean_news()
-	pass
 
-t8 = python_operator(task_id = "clean_news",
+def clean_news():
+	today = date.today()
+	today = today.isoformat()
+	all_articles = newsapi.get_everything(q='covid-19',
+		sources='abc-news', 
+		from_param='2020-05-01', 
+		to=today,
+		language='en',
+		sort_by='relevancy', 
+		page=2)
+	num_articles = all_articles.get('totalResults')
+	for i in range(num_articles):
+		author = all_articles.get('articles')[i].get('author')
+		title = all_articles.get('articles')[i].get('title')
+		content = all_articles.get('articles')[i].get('content')
+		published_date = all_articles.get('articles')[i].get('publishedAt')
+		sentiment = add_sentiment(content)
+		score = add_score(content)
+		message_sql = articles(author=author, title = title, content=content, published_date=published_date, sentiment = sentiment, score= score)
+		Session = sessionmaker(bind=engine)
+		session = Session()
+		session.add(message_sql)
+		session.commit()
+
+t8 = python_operator(task_id = "collect news",
 	python_callable = clean_news,
 	dag = dag)
 
