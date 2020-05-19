@@ -13,14 +13,13 @@ app = dash.Dash(__name__)
 # ------------------------------------------------------------------------------
 # Import and clean data (importing csv into pandas)
 df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/date_tweets_locations_50.csv', index_col=0)
-df = df['date'] = pd.to_datetime(df['date'])
-
+df['date'] = pd.to_datetime(df['date'])
 # ------------------------------------------------------------------------------
 # App layout
 
 app.layout = html.Div([
 
-    html.H1("Web Application Dashboards with Dash", style={'text-align': 'center'}),
+    html.H1("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
 
     dcc.Dropdown(id="select_sentiment",
                  options=[
@@ -82,7 +81,7 @@ def update_graph(option_select):
         locations="location_abbreviation",
         scope="usa",
         color='sentiment_score',
-        # range_color=(-1, 1),
+        range_color=(-1, 1),
         hover_data=['location', 'sentiment_score'],
         color_continuous_scale=px.colors.sequential.YlOrRd,
         labels={'sentiment_score': 'Sentiment Score'},
