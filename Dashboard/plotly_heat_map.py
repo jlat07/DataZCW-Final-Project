@@ -12,62 +12,81 @@ app = dash.Dash(__name__)
 
 # ------------------------------------------------------------------------------
 # Import and clean data (importing csv into pandas)
-df = pd.read_csv("/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/date_tweets_locations_50.csv")
-
-print(df)
+df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/date_tweets_locations_50.csv', index_col=0)
+df = df['date'] = pd.to_datetime(df['date'])
 
 # ------------------------------------------------------------------------------
 # App layout
+
 app.layout = html.Div([
 
-    html.H1("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
+    html.H1("Web Application Dashboards with Dash", style={'text-align': 'center'}),
 
-    dcc.Dropdown(id="select_date",
-                 options=[{"label": "2020-05-09", "value": 2020-5-9},
-                        {"label": "2020-05-10", "value": 2020-5-10},
-                        {"label": "2020-05-11", "value": 2020-5-11},
-                        ],
+    dcc.Dropdown(id="select_sentiment",
+                 options=[
+                     {"label": "Positive", "value": 1},
+                     {"label": "Neutral", "value": 0},
+                     {"label": "Negative", "value": -1}],
                  multi=False,
-                 value=2020-5-9,
+                 value=1,
                  style={'width': "40%"}
-                 ),
+                ),
 
     html.Div(id='output_container', children=[]),
     html.Br(),
 
-    dcc.Graph(id='Sentiment_Map', figure={})
-])
+    dcc.Graph(id='sentiment_map', figure={})
+
+                    ])
+# app.layout = html.Div([
+
+#     html.H1("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
+
+#     dcc.Dropdown(id="select_sentiment",
+#                  options=[
+#                      {"label": "Positive", "value": 1},
+#                      {"label": "Neutral", "value": 0},
+#                      {"label": "Negative", "value": -1}],
+#                  multi=False,
+#                  value=1,
+#                  style={'width': "40%"}
+#                  ),
+
+#     html.Div(id='output_container', children=[]),
+#     html.Br(),
+
+#     dcc.Graph(id='sentiment_map', figure={})
+# ])
 
 # ------------------------------------------------------------------------------
 # Connect the Plotly graphs with Dash Components
 @app.callback(
     [Output(component_id='output_container', component_property='children'),
-     Output(component_id='Sentiment_Map', component_property='figure')],
-    [Input(component_id='select_date', component_property='value')]
-)
+     Output(component_id='sentiment_map', component_property='figure')],
+    [Input(component_id='select_sentiment', component_property='value')]
+            )
+
 def update_graph(option_select):
     print(option_select)
     print(type(option_select))
 
-
-    container = f"The day chosen by user was: {option_select}"
+    container = f"Current sentiment being shown: {option_select}"
 
     dff = df.copy()
-    dff = dff[dff["date"] == option_select]
-    # dff = dff[dff["sentiment"] == "Positive"]
+    dff = dff[dff["sentiment_score"] == option_select]
 
     # Plotly Express
     fig = px.choropleth(
         data_frame=dff,
-        locationmode='USA-states',
-        locations='location_abbreviation',
+        locationmode="USA-states",
+        locations="location_abbreviation",
         scope="usa",
-        color='sentiment',
-        hover_data=['location', 'sentiment'],
+        color='sentiment_score',
+        # range_color=(-1, 1),
+        hover_data=['location', 'sentiment_score'],
         color_continuous_scale=px.colors.sequential.YlOrRd,
-        labels={'Sentiment Value': 'Sentiment'},
-        template='plotly_dark'
-    )
+        labels={'sentiment_score': 'Sentiment Score'},
+        template='plotly_dark')
 
     #Plotly Graph Objects (GO)
     # fig = go.Figure(
