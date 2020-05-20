@@ -19,6 +19,7 @@ from datetime import date
 from newsapi import NewsApiClient
 from dotenv import load_dotenv
 import os
+from email.utils import parsedate_tz
 load_dotenv()
 consumer_key=os.getenv("consumer_key")
 consumer_secret = os.getenv("consumer_secret") 
@@ -140,19 +141,30 @@ def add_score(tweet):
 	score = analyser.polarity_scores(" ".join(filtered))
 	return (score['compound'])
 
+
+def to_timestamp(datestring):
+	time_tuple = parsedate_tz(datestring.strip())
+	dt = datetime(*time_tuple[:6])
+	date_time = dt - timedelta(seconds=time_tuple[-1])
+	timestamp = int(datetime.timestamp(date_time))*1000
+	return timestamp
+
 def get_historic_tweets():
-	days_back = 30
-	today = date.today()
-	start_day = today - timedelta(days_back)
+	days_back = 9
+	today = datetime.today()
+	since = today - timedelta(days_back -1)
+	until =today - timedelta(days_back -2)
+	total = 0
 	for x in range(days_back):
-		results = api.GetSearch(term="coronavirus", since=start_day.isoformat(), count=100, lang=['en'], return_json=True)
+		results = api.GetSearch(term="Coronavirus", until=until.isoformat(), since=since.isoformat(), count=100, lang=['en'], return_json=True)
 		results = results.get("statuses")
-		for x in range(100):
+		total += len(results)
+		for x in range(len(results)):
 			tweet = results[x]
 			tweet_id = tweet.get("id")
 			name = tweet.get("user").get("name")
 			text = tweet.get("text")
-			time_stamp = tweet.get("timestamp_ms")
+			time_stamp = to_timestamp(tweet.get("created_at"))
 			sentiment = add_sentiment(tweet.get('text'))
 			score = add_score(tweet.get('text'))
 			if tweet.get("place") == None:
@@ -169,7 +181,8 @@ def get_historic_tweets():
 			session = Session()
 			session.add(message_sql)
 			session.commit()
-		start_day = start_day + timedelta(1)
+		since = since + timedelta(1)
+		until = until + timedelta(1)
 
 get_historic_tweets()
 
