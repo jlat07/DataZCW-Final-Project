@@ -62,50 +62,28 @@ def add_score(tweet):
 
 def get_numbers():
 	today = date.today()
-	start_date = today - timedelta(29)
-	while start_date != today:
-		page = 1
+	start_date = today
+	page = 1
+	all_articles = newsapi.get_everything(q='covid-19',
+		sources='abc-news', 
+		from_param=today.isoformat(), 
+		to=today.isoformat(),
+		language='en',
+		sort_by='relevancy', 
+		page=page)
+	number_results = all_articles.get('totalResults')
+	number_of_full_pages = (number_results//20)
+	number_left_overs = number_results%20
+	for x in range(number_of_full_pages):
 		all_articles = newsapi.get_everything(q='covid-19',
-			sources='abc-news', 
-			from_param=start_date.isoformat(), 
-			to=start_date.isoformat(),
-			language='en',
-			sort_by='relevancy', 
-			page=page)
-		number_results = all_articles.get('totalResults')
-		number_of_full_pages = (number_results//20)
-		number_left_overs = number_results%20
-		for x in range(number_of_full_pages):
-			all_articles = newsapi.get_everything(q='covid-19',
-			sources='abc-news', 
-			from_param=start_date, 
-			to=start_date,
-			language='en',
-			sort_by='relevancy', 
-			page= x+1)
-			for x in range(20):
-				article = all_articles.get("articles")[x]
-				author = article.get('author')
-				title = article.get('title')
-				content = article.get('content')
-				published_date = article.get('publishedAt')
-				sentiment = add_sentiment(content)
-				score = add_score(content)
-				aut_title = str(published_date + title)
-				message_sql = articles(author=author, title = title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
-				Session = sessionmaker(bind=engine)
-				session = Session()
-				session.add(message_sql)
-				session.commit()
-		leftover_articles = newsapi.get_everything(q='covid-19',
-			sources='abc-news', 
-			from_param=start_date, 
-			to=start_date,
-			language='en',
-			sort_by='relevancy', 
-			page=number_of_full_pages+1)
-		for i in range(number_left_overs):
-			article = leftover_articles.get("articles")[i]
+		sources='abc-news', 
+		from_param=start_date, 
+		to=start_date,
+		language='en',
+		sort_by='relevancy', 
+		page= x+1)
+		for x in range(20):
+			article = all_articles.get("articles")[x]
 			author = article.get('author')
 			title = article.get('title')
 			content = article.get('content')
@@ -118,4 +96,26 @@ def get_numbers():
 			session = Session()
 			session.add(message_sql)
 			session.commit()
-		start_date = start_date + timedelta(1)
+	leftover_articles = newsapi.get_everything(q='covid-19',
+		sources='abc-news', 
+		from_param=start_date, 
+		to=start_date,
+		language='en',
+		sort_by='relevancy', 
+		page=number_of_full_pages+1)
+	for i in range(number_left_overs):
+		article = leftover_articles.get("articles")[i]
+		author = article.get('author')
+		title = article.get('title')
+		content = article.get('content')
+		published_date = article.get('publishedAt')
+		sentiment = add_sentiment(content)
+		score = add_score(content)
+		aut_title = str(published_date + title)
+		message_sql = articles(author=author, title = title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
+		Session = sessionmaker(bind=engine)
+		session = Session()
+		session.add(message_sql)
+		session.commit()
+
+get_numbers()
