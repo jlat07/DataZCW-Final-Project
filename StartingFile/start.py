@@ -17,6 +17,14 @@ from datetime import timedelta
 from datetime import datetime
 from datetime import date
 from newsapi import NewsApiClient
+from dotenv import load_dotenv
+import os
+load_dotenv()
+consumer_key=os.getenv("consumer_key")
+consumer_secret = os.getenv("consumer_secret") 
+access_token_key = os.getenv("access_token_key") 
+access_token_secret = os.getenv("access_token_secret") 
+news_api_key = os.getenv("NEWS_API_KEY")
 newsapi = NewsApiClient(api_key = news_api_key)
 analyser = SentimentIntensityAnalyzer()
 stop_words = list(set(stopwords.words('english')))
@@ -26,11 +34,7 @@ nltk.download('punkt')
 days_back = 30
 today = date.today()
 start_day = today - timedelta(days_back)
-consumer_key='INSERT_HERE'
-consumer_secret='INSERT_HERE' 
-access_token_key='INSERT_HERE' 
-access_token_secret='INSERT_HERE'
-news_api_key = 'INSERT_HERE'
+
 
 api = twitter.Api(consumer_key=consumer_key, consumer_secret=consumer_secret , access_token_key=access_token_key , access_token_secret=access_token_secret)
 engine = create_engine('mysql+pymysql://root:zipcoder@localhost/twitter')
