@@ -19,6 +19,7 @@ from datetime import date
 from newsapi import NewsApiClient
 from dotenv import load_dotenv
 import os
+from email.utils import parsedate_tz
 load_dotenv()
 consumer_key=os.getenv("consumer_key")
 consumer_secret = os.getenv("consumer_secret") 
@@ -30,10 +31,6 @@ analyser = SentimentIntensityAnalyzer()
 stop_words = list(set(stopwords.words('english')))
 nltk.download('stopwords')
 nltk.download('punkt')
-
-days_back = 30
-today = date.today()
-start_day = today - timedelta(days_back)
 
 
 api = twitter.Api(consumer_key=consumer_key, consumer_secret=consumer_secret , access_token_key=access_token_key , access_token_secret=access_token_secret)
@@ -140,19 +137,30 @@ def add_score(tweet):
 	score = analyser.polarity_scores(" ".join(filtered))
 	return (score['compound'])
 
+
+def to_timestamp(datestring):
+	time_tuple = parsedate_tz(datestring.strip())
+	dt = datetime(*time_tuple[:6])
+	date_time = dt - timedelta(seconds=time_tuple[-1])
+	timestamp = int(datetime.timestamp(date_time))*1000
+	return timestamp
+
 def get_historic_tweets():
-	days_back = 30
-	today = date.today()
-	start_day = today - timedelta(days_back)
+	days_back = 9
+	today = datetime.today()
+	since = today - timedelta(days_back -1)
+	until =today - timedelta(days_back -2)
+	total = 0
 	for x in range(days_back):
-		results = api.GetSearch(term="coronavirus", since=start_day.isoformat(), count=100, lang=['en'], return_json=True)
+		results = api.GetSearch(term="Coronavirus", until=until.isoformat(), since=since.isoformat(), count=100, lang=['en'], return_json=True)
 		results = results.get("statuses")
-		for x in range(100):
+		total += len(results)
+		for x in range(len(results)):
 			tweet = results[x]
 			tweet_id = tweet.get("id")
 			name = tweet.get("user").get("name")
 			text = tweet.get("text")
-			time_stamp = tweet.get("timestamp_ms")
+			time_stamp = to_timestamp(tweet.get("created_at"))
 			sentiment = add_sentiment(tweet.get('text'))
 			score = add_score(tweet.get('text'))
 			if tweet.get("place") == None:
@@ -169,7 +177,8 @@ def get_historic_tweets():
 			session = Session()
 			session.add(message_sql)
 			session.commit()
-		start_day = start_day + timedelta(1)
+		since = since + timedelta(1)
+		until = until + timedelta(1)
 
 get_historic_tweets()
 
@@ -187,62 +196,31 @@ class articles(Base):
 
 def get_historic_news():
 	today = date.today()
-	start_date = today - timedelta(29)
+	start_date = today - timedelta(10)
 	while start_date != today:
-		page = 1
-		all_articles = newsapi.get_everything(q='covid-19',
-			sources='abc-news', 
+		all_articles = newsapi.get_everything(q='covid-19', 
 			from_param=start_date.isoformat(), 
-			to=start_date.isoformat(),
+			to=today.isoformat(),
 			language='en',
 			sort_by='relevancy', 
-			page=page)
-		number_results = all_articles.get('totalResults')
-		number_of_full_pages = (number_results//20)
-		number_left_overs = number_results%20
-		for x in range(number_of_full_pages):
-			all_articles = newsapi.get_everything(q='covid-19',
-			sources='abc-news', 
-			from_param=start_date, 
-			to=start_date,
-			language='en',
-			sort_by='relevancy', 
-			page= x+1)
-			for x in range(20):
-				article = all_articles.get("articles")[x]
-				author = article.get('author')
-				title = article.get('title')
-				content = article.get('content')
-				published_date = article.get('publishedAt')
-				sentiment = add_sentiment(content)
-				score = add_score(content)
+			page=1,
+			page_size=100) 
+		for x in range(len(all_articles.get("articles"))):
+			article = all_articles.get("articles")[x]
+			if article.get("content") != None:
+				author = str(article.get('author'))
+				title = str(article.get('title'))
+				content = str(article.get('content'))
+				published_date = str(article.get('publishedAt'))
+				sentiment = str(add_sentiment(content))
+				score = str(add_score(content))
 				aut_title = str(published_date + title)
-				message_sql = articles(author=author, title = title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
+				message_sql = articles(author=author, title=title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
 				Session = sessionmaker(bind=engine2)
 				session = Session()
 				session.add(message_sql)
 				session.commit()
-		leftover_articles = newsapi.get_everything(q='covid-19',
-			sources='abc-news', 
-			from_param=start_date, 
-			to=start_date,
-			language='en',
-			sort_by='relevancy', 
-			page=number_of_full_pages+1)
-		for i in range(number_left_overs):
-			article = leftover_articles.get("articles")[i]
-			author = article.get('author')
-			title = article.get('title')
-			content = article.get('content')
-			published_date = article.get('publishedAt')
-			sentiment = add_sentiment(content)
-			score = add_score(content)
-			aut_title = str(published_date + title)
-			message_sql = articles(author=author, title = title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
-			Session = sessionmaker(bind=engine2)
-			session = Session()
-			session.add(message_sql)
-			session.commit()
-		start_date = start_date + timedelta(1)
+			start_date = start_date + timedelta(1)
+
 
 get_historic_news()
