@@ -197,10 +197,11 @@ class articles(Base):
 def get_historic_news():
 	today = date.today()
 	start_date = today - timedelta(10)
+	next_day = start_date + timedelta(1)
 	while start_date != today:
 		all_articles = newsapi.get_everything(q='covid-19', 
 			from_param=start_date.isoformat(), 
-			to=today.isoformat(),
+			to=start_date.isoformat(),
 			language='en',
 			sort_by='relevancy', 
 			page=1,
@@ -208,19 +209,21 @@ def get_historic_news():
 		for x in range(len(all_articles.get("articles"))):
 			article = all_articles.get("articles")[x]
 			if article.get("content") != None:
-				author = str(article.get('author'))
 				title = str(article.get('title'))
 				content = str(article.get('content'))
 				published_date = str(article.get('publishedAt'))
+				published_date = datetime.strptime(published_date,"%Y-%m-%dT%H:%M:%SZ")
+				published_date = datetime.timestamp(published_date)*1000
+				author = str(article.get('author'))
 				sentiment = str(add_sentiment(content))
 				score = str(add_score(content))
-				aut_title = str(published_date + title)
+				aut_title = str(str(author)+ " " + str(title))
 				message_sql = articles(author=author, title=title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
 				Session = sessionmaker(bind=engine2)
 				session = Session()
 				session.add(message_sql)
 				session.commit()
-			start_date = start_date + timedelta(1)
+		start_date = start_date + timedelta(1)
 
 
 get_historic_news()
