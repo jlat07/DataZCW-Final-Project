@@ -61,9 +61,9 @@ app.layout = html.Div([
             dbc.Input(id='max_entries',
                     placeholder='Max number of results?', type='number'
             ),
-    ], lg=2),
-    dbc.Col([
-        dbc.Button(id='search_button', children='Submit', outline=True),
+        ], lg=2),
+        dbc.Col([
+            dbc.Button(id='search_button', children='Submit', outline=True),
         ], lg=2),
     ]),
     html.Hr(),
@@ -88,10 +88,11 @@ app.layout = html.Div([
                         ),
                     ], lg=3),
                     dbc.Col([
-                        dbc.Label('Sentiment Heat Map:'),
-                        dcc.Loading([
-                            dcc.Graph(id='sentiment_map', figure={}),
-                        ]),
+                        dbc.Label('Drop Down?:'),
+                        dcc.Dropdown(id='regex_options',
+                                    options=[{'label': "Option 1", 'value': 1},
+                                            {'label': "Option 2", 'value': 2}]
+                        ),
                     ], lg=3),
                 ]),
                 html.Br(),
@@ -102,7 +103,7 @@ app.layout = html.Div([
                             figure={}
                     ),
                 ]),
-            ], label='Word Frequency', id='word_frequency_tab'),
+        ], label='Word Frequency', id='word_frequency_tab'),
             dbc.Tab([
                 html.H3(id='total_entries', style={'textAlign': 'center'}),
                 dcc.Loading([
@@ -111,32 +112,37 @@ app.layout = html.Div([
                             figure={}
                     ),
                 ]),
-            ], tab_id='user_analysis_tab', label='Sub Plots'),
+            ], tab_id='more_plots', label='More Plots'),
             dbc.Tab([
                 html.Br(),
-                html.Iframe(src="",
-                        width=595, height=485,
-                        style={'margin-left': '30%'})
+                dcc.Graph(id='sentiment_map', figure={}),
 
-            ], label='Misc', tab_style={'fontWeight': 'bold'})
+            ], label='Heat Map', tab_style={'fontWeight': 'bold'})
         ], id='tabs'),
     ]),
     html.Hr(), html.Br(),
+    dbc.Row([]),
+        dbc.Col(lg=2, xs=11),
+        dbc.Col(lg=2, xs=11),
+        dbc.Col(lg=2, xs=11),
+        dbc.Col(lg=2, xs=11),
+        dbc.Col(lg=2, xs=11),
     dbc.Row([
-        dbc.Col([
+        dbc.Col(lg=2, xs=11),
+        dbc.Col(lg=2, xs=11),
             html.Br(),
             dcc.Loading(
                 DataTable(id='table', sort_action='native',
-                        virtualization=True,
-                        fixed_rows={'headers': True},
-                        style_cell={'width': '200px',
-                                    'font-family': 'Source Sans Pro',
-                                    'backgroundColor': '#eeeeee'}),
-            ),
-        ], lg=9, style={'position': 'relative', 'zIndex': 1,'margin-left': '1%'}),
-    ] + [html.Br() for x in range(30)]),
-], style={'backgroundColor': '#eeeeee'}
-)
+                            virtualization=True,
+                            fixed_rows={'headers': True},
+                            style_cell={'width': '200px',
+                                        'font-family': 'Source Sans Pro',
+                                        'backgroundColor': '#eeeeee'}),
+        ),
+    ], lg=9, style={'position': 'relative', 'zIndex': 1,'margin-left': '1%'}),
+] + [html.Br() for x in range(30)]),
+style={'backgroundColor': '#eeeeee'}
+
 
 # Store data in memory
 @app.callback(Output('df', 'data'),
