@@ -61,8 +61,11 @@ app.layout = html.Div([
 
 # ------------------------------------------------------------------------------
 # Connect the Plotly graphs with Dash Components
-@app.callback(Output(component_id='sentiment_map', component_property='figure'),
-            (Input(component_id='select_sentiment', component_property='value')))
+@app.callback(
+    [Output(component_id='output_container', component_property='children'),
+     Output(component_id='sentiment_map', component_property='figure')],
+    [Input(component_id='select_sentiment', component_property='value')]
+            )
 
 def update_graph(option_select):
     print(option_select)
@@ -71,7 +74,7 @@ def update_graph(option_select):
     container = f"Current sentiment being shown: {option_select}"
 
     dff = df.copy()
-
+    dff = dff[dff["score"] == option_select]
 
     fig = px.choropleth(
             data_frame=dff,
