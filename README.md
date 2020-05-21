@@ -4,7 +4,7 @@ For our final project at Zip Code Wilmington, we chose to create a sentiment anl
 
 After aquiring this data we run it through a Vader model to analyze sentiment of the media and store it in a SQL database. Using airflow we will continously clean the data and and show our results using various visualization tools. Check out our pipeline below.  
 
-![Pipeline](Pipeline.png) 
+![Pipeline](Images/Pipeline.png) 
   
 To run this program we ask you execute the follow steps.
 
