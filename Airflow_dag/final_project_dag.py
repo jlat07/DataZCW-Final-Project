@@ -10,10 +10,9 @@ from airflow.utils.dates import days_ago
 import airflow.hooks.S3_hook
 from airflow.hooks.base_hook import BaseHook
 from airflow.providers.mysql.operators.mysql import MySqlOperator
-import pandas as pd
-import pickle
 from datetime import timedelta
 from datetime import datetime
+from datetime import date
 import sqlalchemy
 from sqlalchemy import create_engine
 import pymysql
@@ -22,7 +21,6 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 import requests
 import os
-from datetime import date
 from newsapi import NewsApiClient
 import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -30,11 +28,18 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
 import nltk
+from newsapi import NewsApiClient
+from dotenv import load_dotenv
+import os
+load_dotenv()
 analyser = SentimentIntensityAnalyzer()
 stop_words = list(set(stopwords.words('english')))
 nltk.download('stopwords')
 nltk.download('punkt')
-
+today = date.today()
+today = today.isoformat()
+news_api_key = os.getenv("NEWS_API_KEY")
+newsapi = NewsApiClient(api_key = news_api_key)
 
 default_args = {
     'owner': 'James Kocher',
@@ -46,29 +51,14 @@ default_args = {
 dag = DAG(
 	"Final_Project_Pipeline",
 	default_args=default_args,
-	description = "This dag will get new top 10 every week from billboard, create necessary columns to run through spotify",
-	schedule_interval = timedelta(days = 7)
+	description = "this dag will retrieve new News articles and update our visualization",
+	schedule_interval = timedelta(hours = 1)
 	)
 
 
 c = BaseHook.get_connection('local_mysql')
 engine = create_engine('mysql+pymysql://root:zipcoder@localhost/News')
 
-#set up twitter database
-
-t1 = bash_operator(
-	task_id="set_up_sql_tables",
-	bash_command = ("mysql -u " + str(c.login)+" -p"+str(c.password)+" < ../twittersetup.sql"),
-	dag = dag)
-
-#set up news database
-
-t2 = bash_operator(
-	task_id="set_up_sql_tables",
-	bash_command = ("mysql -u " + str(c.login)+" -p"+str(c.password)+" < ../newssetup.sql"),
-	dag = dag)
-
-news_api_key = 'e5c1081b366a416caa370c85bb04d392'
 
 Base = declarative_base()
 
@@ -105,52 +95,41 @@ def add_score(tweet):
     score = analyser.polarity_scores(" ".join(filtered))
     return (score['compound'])
 
-
+today = date.today()
+today = today.isoformat()
 def clean_news():
-	today = date.today()
-	today = today.isoformat()
-	all_articles = newsapi.get_everything(q='covid-19',
-		sources='abc-news', 
-		from_param='2020-05-01', 
-		to=today,
+		now = datetime.now()-timedelta(12)
+	start_date = datetime.now()-timedelta(hours=13)
+	all_articles = newsapi.get_everything(q='covid-19', 
+		from_param=start_date.isoformat()[0:19], 
+		to=now.isoformat()[0:19],
 		language='en',
 		sort_by='relevancy', 
-		page=2)
-	num_articles = all_articles.get('totalResults')
-	for i in range(num_articles):
-		author = all_articles.get('articles')[i].get('author')
-		title = all_articles.get('articles')[i].get('title')
-		content = all_articles.get('articles')[i].get('content')
-		published_date = all_articles.get('articles')[i].get('publishedAt')
-		sentiment = add_sentiment(content)
-		score = add_score(content)
-		message_sql = articles(author=author, title = title, content=content, published_date=published_date, sentiment = sentiment, score= score)
-		Session = sessionmaker(bind=engine)
-		session = Session()
-		session.add(message_sql)
-		session.commit()
+		page=1,
+		page_size=100) 
+	for x in range(len(all_articles.get("articles"))):
+		article = all_articles.get("articles")[x]
+		if article.get("content") != None:
+			author = str(article.get('author'))
+			title = str(article.get('title'))
+			content = str(article.get('content'))
+			published_date = str(article.get('publishedAt'))
+			sentiment = str(add_sentiment(content))
+			score = str(add_score(content))
+			aut_title = str(published_date + title)
+			message_sql = articles(author=author, title=title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
+			Session = sessionmaker(bind=engine)
+			session = Session()
+			session.add(message_sql)
+			session.commit()
 
 t8 = python_operator(task_id = "collect news",
 	python_callable = clean_news,
 	dag = dag)
 
 
-#Pass Cleaned Tweets to NLP
-def nlp_news():
-	pass
 
-t9 = python_operator(task_id = "NLP_news"
-	python_callable = nlp_news,
-	dag = dag)
 
-#Save results of NLP
-
-def NLP_news_toDB():
-	pass
-
-t10 = python_operator(task_id = "NLP_news_Results_to_DB"
-	python_callable = NLP_news_toDB,
-	dag = dag)
 
 #Dashboard
 
