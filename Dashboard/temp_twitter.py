@@ -20,10 +20,6 @@ import plotly.express as px
 import re
 
 
-regex_dict = {'Emoji': adv.emoji.EMOJI_RAW,
-            'Mentions': adv.regex.MENTION_RAW,
-            'Hashtags': adv.regex.HASHTAG_RAW,}
-
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 
 app.layout = html.Div([
@@ -86,7 +82,7 @@ app.layout = html.Div([
                     ], lg=3),
                     dbc.Col([
                         dbc.Label('Misc Dropdown:'),
-                        dcc.Dropdown(id='regex_options',
+                        dcc.Dropdown(id=None,
                                     options={'label': 'Misc', 'value': None},
                                     value=None),
                     ], lg=3),
@@ -95,7 +91,7 @@ app.layout = html.Div([
                 html.H2(id='word_freq_title',
                         style={'textAlign': 'center'}),
                 dcc.Loading([
-                    dcc.Graph(id='twitter_word_freq',
+                    dcc.Graph(id='word_frequency',
                             figure={}
                     ),
                 ]),
@@ -156,16 +152,6 @@ def data_base_query(submit_search, search_type, query, count):
         df = article_df[article_df['content'].str.contains(query)]
         return df
 
-@app.callback(Output('word_freq_title', 'children'),
-            Input('df', 'data')
-)
-
-def display_wtd_freq_chart_title(regex, df):
-    if regex is None or df is None:
-        raise PreventUpdate
-    return 'Most Frequently Used ' + regex + ' (' + str(len(df)) +  ' Results)'
-
-
 @app.callback(Output('total_entries', 'children'),
               [Input('df', 'data'),
                Input('search_type', 'value')]
@@ -183,12 +169,10 @@ def display_total_entries(df, search_type):
         count = df['content'].nunique()
         return 'Number of Articles: ' + str(count)
 
-@app.callback(Output(component_id='twitter_word_freq', component_property='figure'),
-            [Input(component_id='df', component_property='data'),
-            Input('search_type', 'value'),
-            Input('text_columns', 'value'),
-            Input('numeric_columns', 'value'),
-            Input('search_type', 'value')]
+@app.callback([Output('word_frequency', 'figure'),
+            Output('word_freq_title', 'children')],
+            [Input('df', 'data'),
+            Input('search_type', 'value')],
 )
 
 def plot_frequency(df, search_type):
@@ -222,23 +206,26 @@ def plot_frequency(df, search_type):
     filtered_words = [word for word in cleaned_words.split() if word not in stopwords]
     # Counted words
     counted_words = collections.Counter(filtered_words)
-
+    # Four loop to count most common
     for letter, count in counted_words.most_common(x):
         words.append(letter)
         counts.append(count)
-    
+    #df to be read by px
     word_freq_df = pd.DataFrame(list(zip(words, counts)), 
                columns =['word', 'count']) 
-
-   
+    # most occuring word
+    most_occuring = df.nlargest(1, ['count'])
+    # string 
+    m_o = most_occuring['word'].item()
+    #containter to return call back
+    container = f"'Most Frequently Used Word: {m_o}"
+   # Bar Graph
     fig = px.bar(word_freq_df, x='count', y='word',
                 hover_data=['count', 'date'], color='count',
-                labels={'sentiment_score':'Sentiment Score'}, height=400,
-                orientation='v')
-
-
+                labels={'words':'Words'}, height=400,
+                orientation='h')
   
-    return fig
+    return fig, container
 
 # Article Analysis Sub Plots
 @app.callback(Output('heat_map', 'figure'),
