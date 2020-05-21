@@ -20,31 +20,14 @@ import plotly.express as px
 import re
 
 
-twitter_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/date_tweets_locations_50.csv', index_col=0)
-twitter_df['date'] = pd.to_datetime(twitter_df['date'])
-
-article_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/date_tweets_locations_50.csv', index_col=0)
-article_df['date'] = pd.to_datetime(article_df['date'])
-
 regex_dict = {'Emoji': adv.emoji.EMOJI_RAW,
             'Mentions': adv.regex.MENTION_RAW,
             'Hashtags': adv.regex.HASHTAG_RAW,}
 
-def get_str_dtype(df, col):
-    """Return dtype of col in df"""
-    dtypes = ['datetime', 'bool', 'int', 'float',
-            'object', 'category']
-    for d in dtypes:
-        if d in str(df.dtypes.loc[col]).lower():
-            return d
-
-
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 
-
 app.layout = html.Div([
-    dcc.Loading(dcc.Store(id='twitter_df', storage_type='memory')),
-    dcc.Loading(dcc.Store(id='article_df', storage_type='memory')),
+    dcc.Loading(dcc.Store(id='df', storage_type='memory')),
     html.Br(),
     dbc.Row([
         dbc.Col([
@@ -75,8 +58,8 @@ app.layout = html.Div([
                     placeholder='Search query'),
         ], lg=2),
         dbc.Col([
-            dbc.Input(id='twitter_search_count',
-                    placeholder='Number of results', type='number'),
+            dbc.Input(id='max_entries',
+                    placeholder='Max number of results?', type='number'),
     ], lg=2),
     dbc.Col([
         dbc.Button(id='search_button', children='Submit', outline=True),
@@ -116,9 +99,9 @@ app.layout = html.Div([
                             figure={}
                     ),
                 ]),
-            ], label='Word Frequency', id='text_analysis_tab'),
+            ], label='Word Frequency', id='word_frequency_tab'),
             dbc.Tab([
-                html.H3(id='user_overview', style={'textAlign': 'center'}),
+                html.H3(id='total_entries', style={'textAlign': 'center'}),
                 dcc.Loading([
                     dcc.Graph(id='heat_map',
                             config={'displayModeBar': False},
@@ -152,22 +135,29 @@ app.layout = html.Div([
 ], style={'backgroundColor': '#eeeeee'}
 )
 
-@app.callback([Output('text_columns', 'options'),
-            Output('text_columns', 'value')],
-            Input('search_button', 'submit'),
-            [State('search_word', 'value'),
-            State('search_type', 'value')]
+# Store data in memory
+@app.callback(Output('df', 'data'),
+            [Input('search_button', 'submit_search')],
+            [State('search_type', 'value'),
+            State('search_word', 'value'),
+            State('max_entries', 'value')]
 )
 
-def set_text_columns_dropdown_options(submit, query, search_type):
-
+def data_base_query(submit_search, search_type, query, count):
     if search_type == 'Search Tweets':
-        return ({'label': 'Tweets', 'value': 'text'})
+        twitter_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/twitter_sample_data.csv', index_col=0)
+        twitter_df = twitter_df.drop_duplicates()
+        df = twitter_df[twitter_df['content'].str.contains(query)]
+        return df
+
     elif search_type == 'Search Articles':
-        return ({'label': 'Article Title', 'value': 'content'})
+        article_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/news_article_sample_data.csv', index_col=0)
+        article_df = article_df.drop_duplicates()
+        df = article_df[article_df['content'].str.contains(query)]
+        return df
 
 @app.callback(Output('word_freq_title', 'children'),
-            Input('twitter_df', 'data1')
+            Input('df', 'data')
 )
 
 def display_wtd_freq_chart_title(regex, df):
@@ -176,42 +166,58 @@ def display_wtd_freq_chart_title(regex, df):
     return 'Most Frequently Used ' + regex + ' (' + str(len(df)) +  ' Results)'
 
 
-@app.callback(Output('article_overview', 'children'),
-              [Input('twitter_df', 'data1'),
-               Input('article_df', 'data2'),
+@app.callback(Output('total_entries', 'children'),
+              [Input('df', 'data'),
                Input('search_type', 'value')]
 )
 
-def display_article_overview(df, search_type):
+def display_total_entries(df, search_type):
     if df is None:
         raise PreventUpdate
-    df = pd.DataFrame(df)
-    count_ = len(df)
-    n_articles = df['content'].nunique()
-    num_tweets = '' if search_type == 'Search Articles' else \
-        'Number of tweets: ' + str(count_) + ' | '
-    return num_tweets + 'Number of Articles: ' + str(n_articles)
+
+    elif search_type == 'Search Tweets':
+        count = df['text'].nunique()
+        return 'Number of Tweets: ' + str(count)
+
+    elif search_type == 'Search Articles':
+        count = df['content'].nunique()
+        return 'Number of Articles: ' + str(count)
 
 @app.callback(Output(component_id='twitter_word_freq', component_property='figure'),
-            [Input(component_id='twitter_df', component_property='data'),
+            [Input(component_id='df', component_property='data'),
             Input('search_type', 'value'),
             Input('text_columns', 'value'),
             Input('numeric_columns', 'value'),
             Input('search_type', 'value')]
 )
 
-def plot_frequency(df):
+def plot_frequency(df, search_type):
+
+    num_cols = [c for c in df.columns if 'count' in c]
+    
     if df is None:
         raise PreventUpdate
 
-    wtd_freq_df = adv.word_frequency(article_df['tweet'], twitter_df['content'],
-                                     regex=regex_dict.get(regex),)
-
-    fig = px.bar(df, x='location', y='sentiment_score',
-            hover_data=['location_abbreviation', 'date'], color='sentiment_score',
-            labels={'sentiment_score':'Sentiment Score'}, height=400,
-            orientation='v')
-    """
+    elif search_type == 'Search Tweets':
+        text = 'text'
+        fig_x = 'location'
+        fig_y = 'sentiment_score'
+        fig_hover = ['location_abbreviation', 'date']
+        fig_color = 'sentiment_score'
+        fig_lables = {'sentiment_score':'Sentiment Score'}
+        
+    elif search_type == 'Search Articles':
+        article_text = 'content'
+        fig_x = 'location'
+        fig_y = 'sentiment_score'
+        fig_hover = ['location_abbreviation', 'date']
+        fig_color = 'sentiment_score'
+        fig_lables = {'sentiment_score':'Sentiment Score'}
+       
+    word_freq_df = adv.word_frequency(df[text], df[num_col],
+                                     regex=regex_dict.get(regex),
+                                     phrase_len=phrase_len_dict.get(regex)
+                                     or 1)[:20]
     fig = make_subplots(rows=1, cols=2,
                         subplot_titles=['Weighted Frequency',
                                         'Absolute Frequency'])
@@ -230,36 +236,23 @@ def plot_frequency(df):
                          paper_bgcolor='#eeeeee',
                          showlegend=False,
                          yaxis={'title': 'Top Words: ' +
-                                text_col.replace('_', ' ').title()}
-    )
+                                text_col.replace('_', ' ').title()})
     fig['layout']['annotations'] += ({'x': 0.5, 'y': -0.16,
-                                    'xref': 'paper', 'showarrow': False,
-                                    'font': {'size': 16},
-                                    'yref': 'paper',
-                                    'text': num_col.replace('_', ' ').title()}
-    )
+                                      'xref': 'paper', 'showarrow': False,
+                                      'font': {'size': 16},
+                                      'yref': 'paper',
+                                      'text': num_col.replace('_', ' ').title()
+                                      },)
     fig['layout']['xaxis']['domain'] = [0.1, 0.45]
     fig['layout']['xaxis2']['domain'] = [0.65, 1.0]
-    """
     return fig
 
 # Article Analysis Sub Plots
 @app.callback(Output('heat_map', 'figure'),
-              [Input('twitter_df', 'data1'),
-               Input('article_df', 'data2'),
-               Input('search_type', 'value')]
+              Input('df', 'data'),
 )
 
-def plot_heat_map(df, search_type):
-    
-    if (df is None) or (search_type is None):
-        raise PreventUpdate
-
-    elif search_type == 'Search Tweets':
-        data = twitter_df
-
-    elif search_type == 'Search Articles':
-        data = article_df
+def plot_heat_map(df):
         
     fig = 'Heat Map'
     # subplot_titles = ['Followers Count', 'Statuses Count',
@@ -294,69 +287,6 @@ def plot_heat_map(df, search_type):
     #                      paper_bgcolor='#eeeeee',
     #                      showlegend=False)
     return fig
-
-
-# Store data in memory
-@app.callback([Output('twitter_df', 'data1'),
-            Output('article_df', 'data')],
-            [Input('search_button', 'submit')],
-            [State('search_type', 'value'),
-            State('search_word', 'value'),
-            # State('search_count', 'value'),
-            ]
-)
-
-def get_twitter_data_save_in_store(submit, search_type, query, count):
-    if query is None:
-        raise PreventUpdate
-    if search_type == 'Search Tweets':
-        df = adv.twitter.search(q=query + ' -filter:retweets',
-                                count=count,
-                                tweet_mode='extended')
-    elif search_type == 'Search Articles':
-        resp_dfs = []
-        for i, num in enumerate(adv.twitter._get_counts(count, default=20),
-                                start=1):
-            df = adv.twitter.search_articles(q=query, count=num, page=i,
-                                          include_entities=True)
-            resp_dfs.append(df)
-        df = pd.concat(resp_dfs)
-        df.columns = ['article_' + c for c in df.columns]
-    else:
-        df = adv.twitter.get_article_timeline(screen_name=query,
-                                           exclude_replies=False,
-                                           include_rts=True,
-                                           count=count,tweet_mode='extended')
-    for exclude in exclude_columns:
-        if exclude in df:
-            del df[exclude]
-    return df.to_dict('rows')
-
-
-@app.callback([Output('column_select', 'options')],
-              [Input('twitter_df', 'data1'),
-               Input('article_df', 'data2')]
-)
-
-def set_columns_to_select(df):
-    if df is None:
-        raise PreventUpdate
-    columns = [{'label': c.replace('_', ' ').title(), 'value': c}
-               for c in df[0].keys()]
-    return columns, columns
-
-
-@app.callback(Output('row_summary', 'children'),
-              [Input('twitter_df', 'data1'),
-               Input('article_df', 'data2'), Input('table', 'data')]
-)
-
-def show_rows_summary(orig_table, filtered_table):
-    if filtered_table is None:
-        raise PreventUpdate
-    summary = f"{len(filtered_table)} out of {len(orig_table)} " \
-              f"rows ({len(filtered_table)/len(orig_table):.1%})"
-    return summary
 
 
 if __name__ == '__main__':
