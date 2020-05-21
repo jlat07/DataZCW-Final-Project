@@ -20,7 +20,8 @@ import plotly.express as px
 import re
 
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
+app = dash.Dash(__name__)
+app = dash.Dash(external_stylesheets=[dbc.themes.CYBORG])   # DARKLY, LUX, SOLAR, FLATLY, MINTY, CYBORG
 
 app.layout = html.Div([
     dcc.Loading(dcc.Store(id='df', storage_type='memory')),
@@ -36,7 +37,8 @@ app.layout = html.Div([
         dbc.Col([
             html.Br(),
             html.H1('Covid-19 Sentiment Anylsis',
-                    style={'textAlign': 'center'})
+                    style={'textAlign': 'center'}
+            )
         ], lg=9),
     ], style={'margin-left': '1%'}),
     html.Br(),
@@ -47,15 +49,18 @@ app.layout = html.Div([
                         placeholder='Search Type',
                         options=[{'label': c, 'value': c}
                                 for c in ['Search Tweets',
-                                        'Search Articles']])
+                                        'Search Articles']]
+            )
         ], lg=2),
         dbc.Col([
             dbc.Input(id='search_word',
-                    placeholder='Search query'),
+                    placeholder='Search query'
+            ),
         ], lg=2),
         dbc.Col([
             dbc.Input(id='max_entries',
-                    placeholder='Max number of results?', type='number'),
+                    placeholder='Max number of results?', type='number'
+            ),
     ], lg=2),
     dbc.Col([
         dbc.Button(id='search_button', children='Submit', outline=True),
@@ -72,19 +77,21 @@ app.layout = html.Div([
                         dbc.Label('Data Type:'),
                         dcc.Dropdown(id='text_columns',
                                     placeholder='Data Type',
-                                    value='text'),
-                    ], lg=3),
-                    dbc.Col([
-                        dbc.Label('Weighted by:'),
-                        dcc.Dropdown(id='numeric_columns',
-                                    placeholder='Numeric Column',
-                                    value='score'),
+                                    value='text'
+                        ),
                     ], lg=3),
                     dbc.Col([
                         dbc.Label('Misc Dropdown:'),
-                        dcc.Dropdown(id=None,
-                                    options={'label': 'Misc', 'value': None},
-                                    value=None),
+                        dcc.Dropdown(id='misc_column1',
+                                    placeholder='Do something',
+                                    value='score'
+                        ),
+                    ], lg=3),
+                    dbc.Col([
+                        dbc.Label('Sentiment Heat Map:'),
+                        dcc.Loading([
+                            dcc.Graph(id='sentiment_map', figure={}),
+                        ]),
                     ], lg=3),
                 ]),
                 html.Br(),
@@ -227,46 +234,79 @@ def plot_frequency(df, search_type):
   
     return fig, container
 
-# Article Analysis Sub Plots
-@app.callback(Output('heat_map', 'figure'),
-              Input('df', 'data'),
+# Connect the Plotly graphs with Dash Components
+@app.callback(Output('sentiment_map', 'figure'),
+            [Input('df', 'data'),
+            Input('search_type', 'value')],
 )
 
-def plot_heat_map(df):
-        
-    fig = 'Heat Map'
-    # subplot_titles = ['Followers Count', 'Statuses Count',
-    #                   'Friends Count', 'Favourites Count',
-    #                   'Verified', 'Tweet Source',
-    #                   'Article Created At']
-    # df = pd.DataFrame(df).drop_duplicates('author')
-    # fig = make_subplots(rows=2, cols=4,
-    #                     subplot_titles=subplot_titles)
-    # for i, col in enumerate(subplot_titles[:4], start=1):
-    #     col = ('article_' + col).replace(' ', '_').lower()
-    #     fig.append_trace(go.Histogram(x=df[col], nbinsx=30,name='Articles'),
-    #                      1, i)
-    # for i, col in enumerate(subplot_titles[4:7], start=5):
-    #     if (i == 6) and (search_type == 'Search Articles'):
-    #         continue
-    #     if col == 'Tweet Source':
-    #         col = 'tweet_source'
-    #     else:
-    #         col = ('article_' + col).replace(' ', '_').lower()
-    #     fig.append_trace(go.Bar(x=df[col].value_counts().index[:14], width=0.9,
-    #                             y=df[col].value_counts().values[:14],
-    #                             name='Articles'), 2, i-4)
-    # fig.append_trace(go.Histogram(x=df['date'],name='Articles',
-    #                               nbinsx=30, ), 2, 4)
+def update_graph(df, search_type):
+    if search_type == 'Search Tweets':
+        count = df['text'].nunique()
+        return 'Number of Tweets: ' + str(count)
 
-    # fig['layout'].update(height=600,
-    #                      yaxis={'title': 'Number of Articles' + (' ' * 50) + ' .'
-    #                             },
-    #                      width=1200,
-    #                      plot_bgcolor='#eeeeee',
-    #                      paper_bgcolor='#eeeeee',
-    #                      showlegend=False)
+    else: 
+        raise PreventUpdate
+
+    dff = df.copy()
+
+    fig = px.choropleth(
+            data_frame=dff,
+            locationmode="USA-states",
+            locations="location_abbreviation",
+            scope="usa",
+            color='score',
+            range_color=(-1, 1),
+            hover_data=['location', 'sentiment'],
+            color_continuous_scale=px.colors.sequential.YlOrRd,
+            labels={'sentiment': 'Sentiment'},
+            template='plotly_dark'  #['ggplot2', 'seaborn', 'simple_white', 'plotly', 'plotly_white', 'plotly_dark', 'presentation', 'xgridoff', 'ygridoff', 'gridon', 'none']
+    )    
+
     return fig
+
+# Article Analysis Sub Plots
+# @app.callback(Output('heat_map', 'figure'),
+#               Input('df', 'data'),
+# )
+
+# def plot_heat_map(df):
+        
+#     fig = 'Heat Map'
+    '''
+    subplot_titles = ['Followers Count', 'Statuses Count',
+                      'Friends Count', 'Favourites Count',
+                      'Verified', 'Tweet Source',
+                      'Article Created At']
+    df = pd.DataFrame(df).drop_duplicates('author')
+    fig = make_subplots(rows=2, cols=4,
+                        subplot_titles=subplot_titles)
+    for i, col in enumerate(subplot_titles[:4], start=1):
+        col = ('article_' + col).replace(' ', '_').lower()
+        fig.append_trace(go.Histogram(x=df[col], nbinsx=30,name='Articles'),
+                         1, i)
+    for i, col in enumerate(subplot_titles[4:7], start=5):
+        if (i == 6) and (search_type == 'Search Articles'):
+            continue
+        if col == 'Tweet Source':
+            col = 'tweet_source'
+        else:
+            col = ('article_' + col).replace(' ', '_').lower()
+        fig.append_trace(go.Bar(x=df[col].value_counts().index[:14], width=0.9,
+                                y=df[col].value_counts().values[:14],
+                                name='Articles'), 2, i-4)
+    fig.append_trace(go.Histogram(x=df['date'],name='Articles',
+                                  nbinsx=30, ), 2, 4)
+
+    fig['layout'].update(height=600,
+                         yaxis={'title': 'Number of Articles' + (' ' * 50) + ' .'
+                                },
+                         width=1200,
+                         plot_bgcolor='#eeeeee',
+                         paper_bgcolor='#eeeeee',
+                         showlegend=False)
+    '''
+    # return fig
 
 
 if __name__ == '__main__':
