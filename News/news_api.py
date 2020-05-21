@@ -20,7 +20,7 @@ top_headlines = newsapi.get_top_headlines(q='corona',
 # /v2/everything
 all_articles = newsapi.get_everything(q='covid-19, stock',
                                       sources='abc-news',
-                                      from_param='2020-04-13',
+                                      from_param='2020-05-01',
                                       to=today,
                                       language='en',
                                       sort_by='relevancy',
