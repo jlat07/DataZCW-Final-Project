@@ -193,58 +193,51 @@ def display_total_entries(df, search_type):
 
 def plot_frequency(df, search_type):
 
-    num_cols = [c for c in df.columns if 'count' in c]
-    
     if df is None:
         raise PreventUpdate
 
     elif search_type == 'Search Tweets':
         text = 'text'
-        fig_x = 'location'
-        fig_y = 'sentiment_score'
-        fig_hover = ['location_abbreviation', 'date']
-        fig_color = 'sentiment_score'
-        fig_lables = {'sentiment_score':'Sentiment Score'}
-        
+    
     elif search_type == 'Search Articles':
-        article_text = 'content'
-        fig_x = 'location'
-        fig_y = 'sentiment_score'
-        fig_hover = ['location_abbreviation', 'date']
-        fig_color = 'sentiment_score'
-        fig_lables = {'sentiment_score':'Sentiment Score'}
-       
-    word_freq_df = adv.word_frequency(df[text], df[num_col],
-                                     regex=regex_dict.get(regex),
-                                     phrase_len=phrase_len_dict.get(regex)
-                                     or 1)[:20]
-    fig = make_subplots(rows=1, cols=2,
-                        subplot_titles=['Weighted Frequency',
-                                        'Absolute Frequency'])
-    fig.append_trace(go.Bar(x=wtd_freq_df['wtd_freq'][::-1],
-                            y=wtd_freq_df['word'][::-1],
-                            name='Weighted Freq.',
-                            orientation='h'), 1, 1)
-    wtd_freq_df = wtd_freq_df.sort_values('abs_freq', ascending=False)
-    fig.append_trace(go.Bar(x=wtd_freq_df ['abs_freq'][::-1],
-                            y=wtd_freq_df['word'][::-1],
-                            name='Abs. Freq.',
-                            orientation='h'), 1, 2)
+        text = 'content'
 
-    fig['layout'].update(height=600,
-                         plot_bgcolor='#eeeeee',
-                         paper_bgcolor='#eeeeee',
-                         showlegend=False,
-                         yaxis={'title': 'Top Words: ' +
-                                text_col.replace('_', ' ').title()})
-    fig['layout']['annotations'] += ({'x': 0.5, 'y': -0.16,
-                                      'xref': 'paper', 'showarrow': False,
-                                      'font': {'size': 16},
-                                      'yref': 'paper',
-                                      'text': num_col.replace('_', ' ').title()
-                                      },)
-    fig['layout']['xaxis']['domain'] = [0.1, 0.45]
-    fig['layout']['xaxis2']['domain'] = [0.65, 1.0]
+    #Plotly Graph Objects (GO)
+    
+    words = []
+    counts = []
+
+    # most_common word amout
+    x = 20
+    # gather all tweets
+    all_words = ' '.join(df[text].str.lower())
+    #remove links, #hashtags, @, :
+    cleaned_words = re.sub(r'http\S+', '', all_words)
+    cleaned_words = re.sub(r"#(\w+)", ' ', cleaned_words, flags=re.MULTILINE)
+    cleaned_words = re.sub(r"@(\w+)", ' ', cleaned_words, flags=re.MULTILINE)
+    cleaned_tweets = re.sub(r" : (\w+)", ' ', cleaned_tweets, flags=re.MULTILINE)
+    # Stop Words
+    stopwords = list(STOPWORDS) + ["made", "now", "rt", "covid19", 'to', 'say', 'sort', 'right', 'now']
+    # Filter Words
+    filtered_words = [word for word in cleaned_words.split() if word not in stopwords]
+    # Counted words
+    counted_words = collections.Counter(filtered_words)
+
+    for letter, count in counted_words.most_common(x):
+        words.append(letter)
+        counts.append(count)
+    
+    word_freq_df = pd.DataFrame(list(zip(words, counts)), 
+               columns =['word', 'count']) 
+
+   
+    fig = px.bar(word_freq_df, x='count', y='word',
+                hover_data=['count', 'date'], color='count',
+                labels={'sentiment_score':'Sentiment Score'}, height=400,
+                orientation='v')
+
+
+  
     return fig
 
 # Article Analysis Sub Plots
