@@ -15,7 +15,9 @@ app = dash.Dash(external_stylesheets=[dbc.themes.CYBORG])   # DARKLY, LUX, SOLAR
 
 # ------------------------------------------------------------------------------
 # Import and clean data (importing csv into pandas)
-df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/twitter_sample_data.csv', index_col=0)
+engine = create_engine('mysql+pymysql://root:zipcoder@localhost/twitter')
+
+twitter_df = pd.read_sql("sentiments", con = engine)
 # ------------------------------------------------------------------------------
 # App layout
 
@@ -80,9 +82,9 @@ def update_graph(option_select):
             scope="usa",
             color='score',
             range_color=(-1, 1),
-            hover_data=['location', 'sentiment'],
+            hover_data=['location', 'score'],
             color_continuous_scale=px.colors.sequential.YlOrRd,
-            labels={'sentiment': 'Sentiment'},
+            labels={'score': 'Sentiment'},
             template='plotly_dark'  #['ggplot2', 'seaborn', 'simple_white', 'plotly', 'plotly_white', 'plotly_dark', 'presentation', 'xgridoff', 'ygridoff', 'gridon', 'none']
     ) 
 
