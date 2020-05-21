@@ -33,13 +33,16 @@ app.layout = html.Div([
 
     html.H1("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
 
-    dcc.Dropdown(id="select_sentiment",
+    dcc.Dropdown(id="select_count",
                  options=[
-                     {"label": "Positive", "value": 1},
-                     {"label": "Neutral", "value": 0},
-                     {"label": "Negative", "value": -1}],
+                     {"label": "5 Most Freq. Words", "value": 5},
+                     {"label": "10 Most Freq. Words", "value": 10},
+                     {"label": "25 Most Freq. Words", "value": 25},
+                     {"label": "50 Most Freq. Words", "value": 50},
+                     {"label": "75 Most Freq. Words", "value": 75},
+                     {"label": "100 Most Freq. Words", "value": 100}],
                  multi=False,
-                 value=1,
+                 value=5,
                  style={'width': "40%"}
                 ),
 
@@ -74,41 +77,22 @@ app.layout = html.Div([
 @app.callback(
     [Output(component_id='output_container', component_property='children'),
      Output(component_id='sentiment_map', component_property='figure')],
-    [Input(component_id='select_sentiment', component_property='value')]
+    [Input(component_id='select_count', component_property='value')]
             )
 
 def update_graph(option_select):
-    print(option_select)
-    print(type(option_select))
+
 
     container = f"Current sentiment being shown: {option_select}"
 
     dff = twitter_df.copy()
-    # dff = dff[dff["sentiment_score"] == option_select]
 
-    # Plotly Express
-    # fig = px.choropleth(
-    #     data_frame=dff,
-    #     locationmode="USA-states",
-    #     locations="location_abbreviation",
-    #     scope="usa",
-    #     color='sentiment_score',
-    #     range_color=(-1, 1),
-    #     hover_data=['location', 'sentiment_score'],
-    #     color_continuous_scale=px.colors.sequential.YlOrRd,
-    #     labels={'sentiment_score': 'Sentiment Score'},
-    #     template='plotly_dark')    #  ['ggplot2', 'seaborn', 'simple_white', 'plotly', 'plotly_white', 'plotly_dark', 'presentation', 'xgridoff', 'ygridoff', 'gridon', 'none']
-    # if option_select == {"label": "Positive", "value": 1}:
-    #     text = 'text'
-    # elif option_select == {"label": "Negative", "value": -1}:
-    #     text = 'content'
-    #Plotly Graph Objects (GO)
     
     words = []
     counts = []
 
     # most_common word amout
-    x = 20
+    x = option_select
     # gather all tweets
     all_words = ' '.join(dff['text'].str.lower())
     #remove links, #hashtags, @, :
@@ -134,8 +118,9 @@ def update_graph(option_select):
     # string 
     m_o = most_occuring['word'].item()
     #containter to return call back
-    container = f"'Most Frequently Used Word: {m_o}"
+    container = f"{option_select} Most Frequently Used Words\n Most Frequent Word was {m_o}"
    # Bar Graph
+   
     fig = px.bar(word_freq_df, x='count', y='word',
                 hover_data=['count', 'word'], color='count',
                 labels={'words':'Words'}, height=400,
