@@ -40,7 +40,7 @@ Base = declarative_base()
 class Tweets(Base):
 	__tablename__ = 'sentiments'
 	tweet_id = Column(Integer, primary_key=True, nullable=False)
-	name = Column(String(500))
+	name = Column(String(250))
 	text = Column(String(250))
 	location = Column(String(250))
 	bounding = Column(String(300))
@@ -186,19 +186,19 @@ engine2 = create_engine('mysql+pymysql://root:zipcoder@localhost/News')
 
 class articles(Base):
     __tablename__ = 'news'
-    author = Column(String(4294967294))
+    author = Column(String(250))
     title = Column(String(500))
     content = Column(String(4294967294))
     date  = Column(Integer)
     sentiment = Column(String(50))
     score = Column(String(50))
-    unique_identify = Column(String(4294967294), primary_key = True)
+    unique_identify = Column(String(200), primary_key = True)
 
 def get_historic_news():
 	today = date.today()
-	start_date = today - timedelta(8)
+	start_date = today - timedelta(10)
 	next_day = start_date + timedelta(1)
-	while start_date != (today+timedelta(1)):
+	while start_date != today:
 		all_articles = newsapi.get_everything(q='covid-19', 
 			from_param=start_date.isoformat(), 
 			to=start_date.isoformat(),
