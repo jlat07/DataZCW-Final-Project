@@ -1,9 +1,27 @@
 # NLP Covid-19 Sentiment Pipeline
 
-For our final project at Zip Code Wilmington, we chose to utilize our skills to extract data from News Api articles, and process tweets from Twitter's streaming API using Kafka. We store that data into a Database, then clean the data with Spark. Run the data through an NLP model to determine sentiment. Finally view the outcome on a custom Dashboard.  
+For our final project at Zip Code Wilmington, we chose to create a sentiment anlayis on COVID-19 for two different sources, the News API and Twitter API. For the news api we will be using Airflow to gather new articles every hour regarding COVID-19. For the Twitter API we have used Kafka to produce a stream of all tweets regarding COVID-19. 
 
-![Pipeline](Images/NLP_covid_pipeline2.png) 
+After aquiring this data we run it through a Vader model to analyze sentiment of the media and store it in a SQL database. Using airflow we will continously clean the data and and show our results using various visualization tools. Check out our pipeline below.  
+
+![Pipeline](Images/Pipeline.png) 
   
+To run this program we ask you execute the follow steps.
+
+-Set up a dotenv file with the approriate keys for News API and Twitter API
+
+-Change your directory to StartFile and run the follow commands on your command line:
+
+- "mysql -u username -p < TwitterSetup.sql"
+- "mysql -u username -p < NewsSetup.sql"
+- "python start.py"
+
+-From the airflow_dag directory add the file "final_project_dag.py" to your airflow home in the dags folder as well as set up your dotenv file in the same folder. Start airflow webserver and scheduler and turn on the final_project_dag.
+
+-Change directory to the twitter_kafka folder and start running your kafka zookeeper and server. After that run both conusmer.py and producer.py simultaneously
+
+-Open the visualation software and watch as results poor in on national sentiment towards COVID-19. 
+
 ___
 *(original project requirements below)*  
   
