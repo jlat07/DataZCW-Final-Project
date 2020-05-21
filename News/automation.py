@@ -1,5 +1,3 @@
-import pandas as pd
-import pickle
 from datetime import timedelta
 from datetime import datetime
 from datetime import date
@@ -25,7 +23,7 @@ nltk.download('stopwords')
 nltk.download('punkt')
 today = date.today()
 today = today.isoformat()
-news_api_key = 'e5c1081b366a416caa370c85bb04d392'
+news_api_key = 'INSERT_HERE'
 newsapi = NewsApiClient(api_key = news_api_key)
 
 engine = create_engine('mysql+pymysql://root:zipcoder@localhost/News')
