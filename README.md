@@ -11,9 +11,10 @@ To run this program we ask you execute the follow steps.
 -Set up a dotenv file with the approriate keys for News API and Twitter API
 
 - Change your directory to StartFile and run the follow commands on your command line:
-  "mysql -u username -p < TwitterSetup.sql"
-  "mysql -u username -p < NewsSetup.sql"
-  "python start.py"
+
+"mysql -u username -p < TwitterSetup.sql"
+"mysql -u username -p < NewsSetup.sql"
+"python start.py"
 
 - From the airflow_dag directory add the file "final_project_dag.py" to your airflow home in the dags folder as well as set up your dotenv file in the same folder. Start airflow webserver and scheduler and turn on the final_project_dag.
 
