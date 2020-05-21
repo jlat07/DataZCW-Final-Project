@@ -121,10 +121,10 @@ def update_graph(option_select):
     container = f"{option_select} Most Frequently Used Words\n Most Frequent Word was {m_o}"
    # Bar Graph
    
-    fig = px.bar(word_freq_df, x='count', y='word',
+    fig = px.bar(word_freq_df, x='word', y='count',
                 hover_data=['count', 'word'], color='count',
                 labels={'words':'Words'}, height=400,
-                orientation='h')
+                orientation='v')
 
     return container, fig
 
