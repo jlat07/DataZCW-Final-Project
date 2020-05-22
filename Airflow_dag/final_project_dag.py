@@ -95,6 +95,14 @@ def add_score(tweet):
     score = analyser.polarity_scores(" ".join(filtered))
     return (score['compound'])
 
+def to_timestamp(datestring):
+	time_tuple = parsedate_tz(datestring.strip())
+	dt = datetime(*time_tuple[:6])
+	date_time = dt - timedelta(seconds=time_tuple[-1])
+	timestamp = int(datetime.timestamp(date_time))*1000
+	return timestamp
+
+
 today = date.today()
 today = today.isoformat()
 def clean_news():
