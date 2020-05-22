@@ -1,3 +1,5 @@
+![Covid-19 Photo](https://github.com/jlat07/DataZCW-Final-Project/blob/dev/Images/covid.jpg) 
+
 # NLP Covid-19 Sentiment Pipeline
 
 For our final project at Zip Code Wilmington, we chose to create a sentiment anlayis on COVID-19 for two different sources, the News API and Twitter API. For the news api we will be using Airflow to gather new articles every hour regarding COVID-19. For the Twitter API we have used Kafka to produce a stream of all tweets regarding COVID-19. 
