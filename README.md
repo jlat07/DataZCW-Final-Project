@@ -4,7 +4,34 @@ For our final project at Zip Code Wilmington, we chose to create a sentiment anl
 
 After aquiring this data we run it through a Vader model to analyze sentiment of the media and store it in a SQL database. Using airflow we will continously clean the data and and show our results using various visualization tools. Check out our pipeline below.  
 
+---
+## Pipeline Flow
+
 ![Pipeline](Images/Pipeline.png) 
+
+---
+## Meet the team
+-Headshots  
+  - blurbs  
+    
+-Headshots  
+  - blurbs  
+    
+-Headshots  
+  - blurbs
+---
+## Api's Used
+- Twitter's Streaming API (link)
+  
+- Newsapi (link)
+---
+## Frameworks Used
+- Kafka
+- Spark
+- Airflow
+- PANDAS
+___
+## Where to start
   
 To run this program we ask you execute the follow steps.
 
@@ -21,6 +48,8 @@ To run this program we ask you execute the follow steps.
 -Change directory to the twitter_kafka folder and start running your kafka zookeeper and server. After that run both conusmer.py and producer.py simultaneously
 
 -Open the visualation software and watch as results poor in on national sentiment towards COVID-19. 
+
+
 
 ___
 *(original project requirements below)*  
