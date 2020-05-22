@@ -12,6 +12,7 @@ To run this program we ask you execute the follow steps.
 
 -Change your directory to StartFile and run the follow commands on your command line:
 
+- Add your dotenv file to this folder 
 - "mysql -u username -p < TwitterSetup.sql"
 - "mysql -u username -p < NewsSetup.sql"
 - "python start.py"
@@ -20,7 +21,7 @@ To run this program we ask you execute the follow steps.
 
 -Change directory to the twitter_kafka folder and start running your kafka zookeeper and server. After that run both conusmer.py and producer.py simultaneously
 
--Open the visualation software and watch as results poor in on national sentiment towards COVID-19. 
+-For viusalizations please run the 2 Plotly Dash Apps in the Final_Project/Dashboard/py_files and open local hosts. Also for for a basic visualization report launch the Jupyter Notebook report_df.
 
 ___
 *(original project requirements below)*  
