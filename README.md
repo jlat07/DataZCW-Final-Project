@@ -1,7 +1,35 @@
-# DataZCW-Final-Project
+# NLP Covid-19 Sentiment Pipeline
+
+For our final project at Zip Code Wilmington, we chose to create a sentiment anlayis on COVID-19 for two different sources, the News API and Twitter API. For the news api we will be using Airflow to gather new articles every hour regarding COVID-19. For the Twitter API we have used Kafka to produce a stream of all tweets regarding COVID-19. 
+
+After aquiring this data we run it through a Vader model to analyze sentiment of the media and store it in a SQL database. Using airflow we will continously clean the data and and show our results using various visualization tools. Check out our pipeline below.  
+
+![Pipeline](Images/Pipeline.png) 
+  
+To run this program we ask you execute the follow steps.
+
+-Set up a dotenv file with the approriate keys for News API and Twitter API
+
+-Change your directory to StartFile and run the follow commands on your command line:
+
+- Add your dotenv file to this folder 
+- "mysql -u username -p < TwitterSetup.sql"
+- "mysql -u username -p < NewsSetup.sql"
+- "python start.py"
+
+-From the airflow_dag directory add the file "final_project_dag.py" to your airflow home in the dags folder as well as set up your dotenv file in the same folder. Start airflow webserver and scheduler and turn on the final_project_dag.
+
+-Change directory to the twitter_kafka folder and start running your kafka zookeeper and server. After that run both conusmer.py and producer.py simultaneously
+
+-For viusalizations please run the 2 Plotly Dash Apps in the Final_Project/Dashboard/py_files and open local hosts. Also for for a basic visualization report launch the Jupyter Notebook report_df.
+
+___
+*(original project requirements below)*  
+  
+## DataZCW-Final-Project
 capstone project for ZCW Data's course.
 
-## Final Group Project Possibles
+### Final Group Project Possibles
 
 - How To Build a Neural Network to Recognize Handwritten Digits with TensorFlow
   - ye olde scanning chestnut
@@ -21,7 +49,7 @@ capstone project for ZCW Data's course.
   - Google images
   - popularity or relevance measures
 
-## Group Size
+### Group Size
 
 Each group should 2-4 people. Effort should be mostly
 Data Engineering, but at the end, do some actaul Data Science.
@@ -61,7 +89,7 @@ the project. You should be able to answer those questions._
 - Make it pretty.
 - Add a "slide deck" of project work, overall structure, and status of milestones.
   
-  ## Tech choices
+  ### Tech choices
   
   All tech choices will be approved by instructors. 
   Any tech we've studied is fair game for use.
