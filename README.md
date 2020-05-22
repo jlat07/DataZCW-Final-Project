@@ -56,7 +56,7 @@ the project. You should be able to answer those questions._
   - A Data Viz and/or Dashbord showing the analysis done (of the data flows)
 - A Model which makes some prediction based on the data
   - a ad-hoc prediction request
-  - or other insight into the data
+  - or other insight into the data 
 - Some documentation in the project's README (along with some PNGs of the results)
 - Make it pretty.
 - Add a "slide deck" of project work, overall structure, and status of milestones.
