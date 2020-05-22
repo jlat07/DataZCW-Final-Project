@@ -67,7 +67,7 @@ dcc.Store(id='df', storage_type='memory'),
         ], lg=2),
         dbc.Col([
             dbc.Input(id='max_entries',
-                    placeholder='Max number of results to show', type='number'
+                    placeholder='Max number of results?', type='number'
             ),
         ], lg=2),
         dbc.Col([
@@ -82,26 +82,24 @@ dcc.Store(id='df', storage_type='memory'),
                 html.Br(),
                 dbc.Row([
                     dbc.Col([
-                        dbc.Label('Frequent Word Amount:'),
-                        dcc.Dropdown(id="select_freq_amountt",
-                placeholder='Select Amount',
-                 options=[
-                     {"label": "5 Most Freq. Words", "value": 5},
-                     {"label": "10 Most Freq. Words", "value": 10},
-                     {"label": "25 Most Freq. Words", "value": 25},
-                     {"label": "50 Most Freq. Words", "value": 50},
-                     {"label": "75 Most Freq. Words", "value": 75},
-                     {"label": "100 Most Freq. Words", "value": 100}],
-                 multi=False,
-                 value=5,
-                 style={'width': "40%"}
-                ),
-                    ], lg=9),
+                        dbc.Label('Data Type:'),
+                        dcc.Dropdown(id='text_columns',
+                                    placeholder='Data Type',
+                                    value='text'
+                        ),
+                    ], lg=3),
                     dbc.Col([
-                        dbc.Label('Sentiment:'),
+                        dbc.Label('Misc Dropdown:'),
                         dcc.Dropdown(id='misc_column1',
-                                    placeholder='Select Sentiment',
+                                    placeholder='Do something',
                                     value='score'
+                        ),
+                    ], lg=3),
+                    dbc.Col([
+                        dbc.Label('Drop Down?:'),
+                        dcc.Dropdown(id='regex_options',
+                                    options=[{'label': "Option 1", 'value': 1},
+                                            {'label': "Option 2", 'value': 2}]
                         ),
                     ], lg=3),
                 ]),
@@ -122,12 +120,12 @@ dcc.Store(id='df', storage_type='memory'),
                             figure={}
                     ),
                 ]),
-            ], tab_id='more_plots', label='Heat Map'),
+            ], tab_id='more_plots', label='More Plots'),
             dbc.Tab([
                 html.Br(),
                 dcc.Graph(id='sentiment_map', figure={}),
 
-            ], label='More Plots', tab_style={'fontWeight': 'bold'})
+            ], label='Heat Map', tab_style={'fontWeight': 'bold'})
         ], id='tabs'),
     ]),
     html.Hr(), html.Br(),
@@ -142,16 +140,12 @@ dcc.Store(id='df', storage_type='memory'),
         dbc.Col([
             html.Br(),
             dcc.Loading(
-                   DataTable(id='table', sort_action='native',
-                          # n_fixed_rows=1,
-                          # filtering=False,
-                          virtualization=True,
-                          fixed_rows={'headers': True},
-                          # style_cell_conditional=[{
-                          #     'if': {'row_index': 'odd'},
-                          #     'backgroundColor': '#eeeeee'}],
-                          style_cell={'width': '200px',
-                                      'font-family': 'Source Sans Pro'}),
+                DataTable(id='table', sort_action='native',
+                            virtualization=True,
+                            fixed_rows={'headers': True},
+                            style_cell={'width': '200px',
+                                        'font-family': 'Source Sans Pro',
+                                        'backgroundColor': '#eeeeee'}),
             ),
         ], lg=9, style={'position': 'relative', 'zIndex': 1,'margin-left': '1%'}),
     ] + [html.Br() for x in range(30)]),
@@ -169,7 +163,7 @@ dcc.Store(id='df', storage_type='memory'),
 def data_base_query(submit_search, search_type, query, count):
     n_clicks = 0
     if search_type == 'Search Tweets':
-        df = twitter_df[twitter_df['text'].str.contains(query)]
+        df = twitter_df[twitter_df['content'].str.contains(query)]
         data = df
 
     elif search_type == 'Search Articles':

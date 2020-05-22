@@ -30,8 +30,19 @@ twitter_df = twitter_df.drop_duplicates()
 # App layout
 
 app.layout = html.Div([
-
-    html.H1("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
+    dcc.Loading(dcc.Store(id='twitter_df', storage_type='memory')),
+    html.Br(),
+    dbc.Row([
+        dbc.Col([
+            html.A([
+                html.Img('src=https://avatars2.githubusercontent.com/u/13836040?s=200&v=4',
+                         width=200, style={'display': 'inline-block'}),
+            ],),
+            html.Br(),
+        ], lg=2, xs=11, style={'textAlign': 'center'}),
+        dbc.Col([
+            html.Br(),
+            html.H1("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
 
     dcc.Dropdown(id="select_freq_amountt",
                  options=[
@@ -44,14 +55,54 @@ app.layout = html.Div([
                  multi=False,
                  value=5,
                  style={'width': "40%"}
-                ),
-
+            ),
+            html.Br(),
+            html.H2(id='wtd_freq_chart_title',
+                    style={'textAlign': 'center'}),
+            dcc.Loading([
+                dcc.Graph(id='wtd_freq_chart',
+                            config={'displayModeBar': False},
+                            figure={'layout': go.Layout(plot_bgcolor='#eeeeee',
+                                                        paper_bgcolor='#eeeeee')
+                                    }),
+            ]),
+        ], label='Text Analysis', id='text_analysis_tab'),
     html.Div(id='freq_container', children=[]),
     html.Br(),
 
     dcc.Graph(id='word_freq_bar_chart', figure={})
 
-                    ])
+                    ]),
+    html.Br(),
+    dbc.Row([
+        dbc.Col(lg=2, xs=10),
+        dbc.Col([
+           dcc.Dropdown(id='search_type',
+                        placeholder='Search Type',
+                        options=[{'label': c, 'value': c}
+                                 for c in ['Search Tweets',
+                                           'Search Users',
+                                           'Get User Timeline']])
+        ], lg=2, xs=10),
+        dbc.Col([
+            dbc.Input(id='twitter_search',
+                      placeholder='Search query'),
+        ], lg=2, xs=10),
+        dbc.Col([
+            dbc.Input(id='twitter_search_count',
+                      placeholder='Number of results', type='number'),
+
+        ], lg=2, xs=10),
+        dbc.Col([
+            dcc.Dropdown(id='twitter_search_lang', placeholder='Language',
+                         options=lang_options,
+                         style={'position': 'relative', 'zIndex': 15}
+                         ),
+        ], lg=2, xs=10),
+        dbc.Col([
+            dbc.Button(id='search_button', children='Submit', outline=True),
+        ], lg=2, xs=10),
+    ]),
 html.Div([
 
     html.H2("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
@@ -70,7 +121,7 @@ html.Div([
     html.Br(),
 
     dcc.Graph(id='sentiment_map', figure={})
-])
+]),
 
 # ------------------------------------------------------------------------------
 # Connect the word freq bar chart with with Dash Components
@@ -108,14 +159,14 @@ def update_graph(option_select):
         counts.append(count)
     #df to be read by px
     word_freq_df = pd.DataFrame(list(zip(words, counts)), 
-               columns =['word', 'count']) 
+                columns =['word', 'count']) 
     # most occuring word
     most_occuring = word_freq_df.nlargest(1, ['count'])
     # string 
     m_o = most_occuring['word'].item()
     #containter to return call back
     container = f"Most Frequent Word was {m_o}"
-   # Bar Graph
+    # Bar Graph
    
     fig = px.bar(word_freq_df, x='word', y='count',
                 hover_data=['count', 'word'], color='count',

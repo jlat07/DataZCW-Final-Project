@@ -5,7 +5,6 @@ from dash_table.FormatTemplate import Format
 from matplotlib import rcParams
 from plotly.subplots import make_subplots
 from wordcloud import WordCloud, STOPWORDS
-import advertools as adv
 import collections
 import dash
 import dash_core_components as dcc
@@ -21,7 +20,16 @@ import re
 
 
 app = dash.Dash(__name__)
-app = dash.Dash(external_stylesheets=[dbc.themes.CYBORG])   # DARKLY, LUX, SOLAR, FLATLY, MINTY, CYBORG
+app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY])   # DARKLY, LUX, SOLAR, FLATLY, MINTY, CYBORG
+server = app.server
+app.title = 'Covid-19 Dashboard'
+
+# Data sets
+twitter_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/twitter_sample_data.csv', index_col=0)
+twitter_df = twitter_df.drop_duplicates()
+
+article_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/news_article_sample_data.csv', index_col=0)
+article_df = article_df.drop_duplicates()
 
 app.layout = html.Div([
     dcc.Loading(dcc.Store(id='df', storage_type='memory')),
@@ -54,7 +62,7 @@ app.layout = html.Div([
         ], lg=2),
         dbc.Col([
             dbc.Input(id='search_word',
-                    placeholder='Search query'
+                    placeholder='Covid + "enter here"'
             ),
         ], lg=2),
         dbc.Col([
@@ -122,14 +130,14 @@ app.layout = html.Div([
     ]),
     html.Hr(), html.Br(),
     dbc.Row([]),
-        dbc.Col(lg=2, xs=11),
-        dbc.Col(lg=2, xs=11),
-        dbc.Col(lg=2, xs=11),
-        dbc.Col(lg=2, xs=11),
-        dbc.Col(lg=2, xs=11),
+        dbc.Col(),
+        dbc.Col(),
+        dbc.Col(),
+        dbc.Col(),
+        dbc.Col(),
     dbc.Row([
-        dbc.Col(lg=2, xs=11),
-        dbc.Col(lg=2, xs=11),
+        dbc.Col(),
+        dbc.Col([
             html.Br(),
             dcc.Loading(
                 DataTable(id='table', sort_action='native',
@@ -138,35 +146,42 @@ app.layout = html.Div([
                             style_cell={'width': '200px',
                                         'font-family': 'Source Sans Pro',
                                         'backgroundColor': '#eeeeee'}),
-        ),
-    ], lg=9, style={'position': 'relative', 'zIndex': 1,'margin-left': '1%'}),
-] + [html.Br() for x in range(30)]),
-style={'backgroundColor': '#eeeeee'}
+            ),
+        ], lg=9, style={'position': 'relative', 'zIndex': 1,'margin-left': '1%'}),
+    ] + [html.Br() for x in range(30)]),
+], style={'backgroundColor': '#eeeeee'})
 
-
-# Store data in memory
-@app.callback(Output('df', 'data'),
-            [Input('search_button', 'submit_search')],
-            [State('search_type', 'value'),
-            State('search_word', 'value'),
-            State('max_entries', 'value')]
+@app.callback(
+    [Output(component_id='table', component_property='data'),
+    Output(component_id='df', component_property='df')],
+    [Input('search_button', 'n_clicks'),
+    Input('search_type', 'value'),
+    Input('search_word', 'value'),
+    Input('max_entries', 'value')]
 )
 
 def data_base_query(submit_search, search_type, query, count):
+    n_clicks = 0
     if search_type == 'Search Tweets':
-        twitter_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/twitter_sample_data.csv', index_col=0)
-        twitter_df = twitter_df.drop_duplicates()
         df = twitter_df[twitter_df['content'].str.contains(query)]
-        return df
+        data = df
 
     elif search_type == 'Search Articles':
-        article_df = pd.read_csv('/Users/jthompson/dev/DataZCW-Final-Project/Dashboard/news_article_sample_data.csv', index_col=0)
-        article_df = article_df.drop_duplicates()
         df = article_df[article_df['content'].str.contains(query)]
-        return df
+        data = df
+        
+    return df, data
+
+
+@app.callback(
+    Output('search_button', 'children'),
+    [Input('search_button', 'click')])
+
+def clicks(clicks):
+    return clicks 
 
 @app.callback(Output('total_entries', 'children'),
-              [Input('df', 'data'),
+              [Input('df', 'memory'),
                Input('search_type', 'value')]
 )
 
@@ -184,7 +199,7 @@ def display_total_entries(df, search_type):
 
 @app.callback([Output('word_frequency', 'figure'),
             Output('word_freq_title', 'children')],
-            [Input('df', 'data'),
+            [Input('df', 'memory'),
             Input('search_type', 'value')],
 )
 
@@ -242,7 +257,7 @@ def plot_frequency(df, search_type):
 
 # Connect the Plotly graphs with Dash Components
 @app.callback(Output('sentiment_map', 'figure'),
-            [Input('df', 'data'),
+            [Input('df', 'memory'),
             Input('search_type', 'value')],
 )
 
@@ -273,7 +288,7 @@ def update_graph(df, search_type):
 
 # Article Analysis Sub Plots
 # @app.callback(Output('heat_map', 'figure'),
-#               Input('df', 'data'),
+#               Input('df', 'memory'),
 # )
 
 # def plot_heat_map(df):

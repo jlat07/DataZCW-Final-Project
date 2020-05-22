@@ -1,4 +1,4 @@
-author,date,content,title,,score,sentiment
+author,date,content,title,state,score,sentiment
 0,2020-5-9,Yikes! #COVID19 effect on unemployment figures=ill wind that blows nobody any good. Many unemployed havent been ad… https://t.co/uzuFOK53i6,Alaska,AK,1,Positive
 1,2020-5-9,One of the most common questions that we are getting is how to answer interview questions about being laid off/furl… https://t.co/3DZ8cREmrY,Alabama,AL,0,Nuetral
 2,2020-5-9,"RT @BvilleDailyNews: Missourians made nearly 55,000 new unemployment claims in the past week, increasing total claims since mid-March to ne…",Arkansas,AR,1,Positive
@@ -87,5 +87,7 @@ This Has Been Used For More Than Decades In Our Family To Fight Colds…",Virgin
 In #SouthAfrica We Call It #Lengana
 This Has Been Used For More Than Decades In Our Family To Fight Colds…",Wisconsin,WI,1,Positive
 55,2020-5-9,"Researchers in the @BCM_TropMed, and @TexasChildrens have partnered with PATH to develop a low-cost, safe, and effe… https://t.co/Y1VY3x9kPd",West Virginia,WV,0,Nuetral
+56,2020-5-9,"First #COVID19 vaccine test on animals successful
+#COVID19vaccine https://t.co/eqCCSAUcMN via @cgtnofficial",Wyoming,WY,-1,Negative
 56,2020-5-9,"First #COVID19 vaccine test on animals successful
 #COVID19vaccine https://t.co/eqCCSAUcMN via @cgtnofficial",Wyoming,WY,-1,Negative

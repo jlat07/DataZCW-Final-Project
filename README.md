@@ -11,14 +11,31 @@ After aquiring this data we run it through a Vader model to analyze sentiment of
 
 ---
 ## Meet the team
--Headshots  
-  - blurbs  
+<img src="https://media-exp1.licdn.com/dms/image/C4E03AQFESVQ3DKIHWQ/profile-displayphoto-shrink_800_800/0?e=1595462400&v=beta&t=ZhHCfbEPocPARlfD5Xcaom6M-n38_XK2WCL-04qzcqo" width="200" height="200" />  
+  
+  ### Apoorva Shukla
+ 
+  - "Data Engineer in training with a passion for problem solving and learning new skills. Highly organized in handling multiple task in competitive environment."  
+
+  [Connect on LinkedIn](https://www.linkedin.com/in/apoorva-shukla-mishra/) 
     
--Headshots  
-  - blurbs  
     
--Headshots  
-  - blurbs
+<img src="https://media-exp1.licdn.com/dms/image/C5603AQGQUNV-xCeUHQ/profile-displayphoto-shrink_800_800/0?e=1595462400&v=beta&t=0OwjJGPrYna9Jv-nZ-AJhTUjt2RSNhb2zu6ZHrA4-iQ" width="200" height="200" />  
+  
+  ### James Kocher
+
+  - "Being the “Excel guy” in the office, I decided to take my skills to the next level and become the “data guy” when I enrolled in Zip Code Wilmington’s first ever Data Engineering cohort. Since then, I have been sharpening my skills in Python and MySQL and applying my creative and analytical mindset as I aspire to become a successful data engineer."  
+
+  [Connect on LinkedIn](https://www.linkedin.com/in/james-kocher/)
+
+  <img src="https://media-exp1.licdn.com/dms/image/C4E03AQEOXCT1XIU8CQ/profile-displayphoto-shrink_400_400/0?e=1595462400&v=beta&t=iL7hRwG7zOuZ4N7tDhnYRPCYNNRcV21DJEx2bda3SMY" width="200" height="200" />  
+  
+  ### James Thompson
+
+  - "A Physics Major and Math Minor, Lincoln University. Previously worked in the Architectural Engineering and Construction (AEC) Industry as a Value Engineer, estimating project costs, and as a Building Information Modeling Designer, using Autodesk programs to create 3D architectural models. Strong problem-solving skills and passionate about automating solutions using code."  
+    
+  [Connect on LinkedIn](https://www.linkedin.com/in/james-la-thompson/)
+
 ---
 ## Api's Used
 - Twitter's Streaming API (link)
