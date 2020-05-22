@@ -42,16 +42,13 @@ After aquiring this data we run it through a Vader model to analyze sentiment of
 - Twitter's Streaming API (link)  
   
 - Newsapi (link)  
-
----  
+ 
 ## Frameworks Used  
 
 - Kafka
 - Spark
 - Airflow
-- PANDAS  
-  
----  
+- PANDAS    
   
 ## Where to start  
   
