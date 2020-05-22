@@ -66,9 +66,10 @@ To run this program we ask you execute the follow steps.
 
 -Change directory to the twitter_kafka folder and start running your kafka zookeeper and server. After that run both conusmer.py and producer.py simultaneously
 
--Open the visualation software and watch as results poor in on national sentiment towards COVID-19. 
-___
-*(original project requirements below)*  
+-Open the visualation software and watch as results poor in on national sentiment towards COVID-19.  
+
+---
+#### *(original project requirements below)*  
   
 ## DataZCW-Final-Project
 capstone project for ZCW Data's course.
