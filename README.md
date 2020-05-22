@@ -37,11 +37,11 @@ After aquiring this data we run it through a Vader model to analyze sentiment of
   [Connect on LinkedIn](https://www.linkedin.com/in/james-la-thompson/)
 
 ---  
-### Api's Used  
+### APIs Used  
 
-- Twitter's Streaming API (link)  
+- [Twitter's Streaming API](https://developer.twitter.com/en/docs/tutorials/consuming-streaming-data)
   
-- Newsapi (link)  
+- [News API](https://newsapi.org)
  
 ### Frameworks Used  
 
