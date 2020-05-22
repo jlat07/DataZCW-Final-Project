@@ -1,4 +1,5 @@
-![Covid-19 Photo](https://github.com/jlat07/DataZCW-Final-Project/blob/dev/Images/covid.jpg) 
+![Covid-19 Photo](Images/covid.jpg) 
+
 
 # NLP Covid-19 Sentiment Pipeline
 
