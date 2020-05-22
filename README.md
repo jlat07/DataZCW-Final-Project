@@ -36,19 +36,24 @@ After aquiring this data we run it through a Vader model to analyze sentiment of
     
   [Connect on LinkedIn](https://www.linkedin.com/in/james-la-thompson/)
 
----
-## Api's Used
-- Twitter's Streaming API (link)
+---  
+## Api's Used  
+
+- Twitter's Streaming API (link)  
   
-- Newsapi (link)
----
-## Frameworks Used
+- Newsapi (link)  
+
+---  
+## Frameworks Used  
+
 - Kafka
 - Spark
 - Airflow
-- PANDAS
-___
-## Where to start
+- PANDAS  
+  
+---  
+  
+## Where to start  
   
 To run this program we ask you execute the follow steps.
 
