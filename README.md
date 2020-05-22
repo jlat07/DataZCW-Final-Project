@@ -51,7 +51,8 @@ After aquiring this data we run it through a Vader model to analyze sentiment of
 - Kafka
 - Spark
 - Airflow
-- PANDAS    
+- PANDAS 
+- Plotly Dash   
   
 ### Where to start  
   
