@@ -1,15 +1,9 @@
-#import datadotworld as dw
-#import papermill as pm
-#from airflow.operators.papermill_operator import PapermillOperator
-#from airflow.operators.postgres_operator import PostgresOperator
-#from airflow.operators.postgres_operator import PostgresHook
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
 from airflow import DAG
 from airflow.utils.dates import days_ago
 import airflow.hooks.S3_hook
 from airflow.hooks.base_hook import BaseHook
-from airflow.providers.mysql.operators.mysql import MySqlOperator
 from datetime import timedelta
 from datetime import datetime
 from datetime import date
@@ -31,6 +25,25 @@ import nltk
 from newsapi import NewsApiClient
 from dotenv import load_dotenv
 import os
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
+from dash_table import DataTable
+from dash_table.FormatTemplate import Format
+from matplotlib import rcParams
+from plotly.subplots import make_subplots
+from wordcloud import WordCloud, STOPWORDS
+import collections
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+import dash_bootstrap_components as dbc
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import plotly.graph_objs as go
+import plotly.express as px 
+import re
 load_dotenv()
 analyser = SentimentIntensityAnalyzer()
 stop_words = list(set(stopwords.words('english')))
@@ -40,6 +53,8 @@ today = date.today()
 today = today.isoformat()
 news_api_key = os.getenv("NEWS_API_KEY")
 newsapi = NewsApiClient(api_key = news_api_key)
+jupyter_location_string = "/Users/jkocher/Documents/projects/DataZCW-Final-Project/Final_Project/Dashboard/getting_df.ipynb"
+executed_location_string = "/Users/jkocher/Documents/projects/DataZCW-Final-Project/Final_Project/Dashboard/report.ipynb"
 
 default_args = {
     'owner': 'James Kocher',
@@ -55,13 +70,10 @@ dag = DAG(
 	schedule_interval = timedelta(hours = 1)
 	)
 
-
-c = BaseHook.get_connection('local_mysql')
 engine = create_engine('mysql+pymysql://root:zipcoder@localhost/News')
 
 
 Base = declarative_base()
-
 class articles(Base):
     __tablename__ = 'news'
     author = Column(String(250))
@@ -70,15 +82,11 @@ class articles(Base):
     date  = Column(Integer)
     sentiment = Column(String(50))
     score = Column(String(50))
-    id = Column(Integer, primary_key=True)
+    unique_identify = Column(String(200), primary_key = True)
 
-newsapi = NewsApiClient(api_key = news_api_key)
-
-#Collect News Data
-
-def add_sentiment(tweet):
-    tweet = re.sub(r'[^\w\s]', '', tweet)
-    words = word_tokenize(tweet, "english", True)
+def add_sentiment(news):
+    news = re.sub(r'[^\w\s]', '', news)
+    words = word_tokenize(news, "english", True)
     filtered = [w for w in words if not w in stop_words]
     score = analyser.polarity_scores(" ".join(filtered))
     if 0.0 < score['compound'] <= 1.0:
@@ -88,26 +96,17 @@ def add_sentiment(tweet):
     elif score['compound'] == 0.0:
         return 'Neutral'
 
-def add_score(tweet):
-    tweet = re.sub(r'[^\w\s]', '', tweet)
+def add_score(tweets):
+    tweet = re.sub(r'[^\w\s]', '', tweets)
     words = word_tokenize(tweet, "english", True)
     filtered = [w for w in words if not w in stop_words]
     score = analyser.polarity_scores(" ".join(filtered))
     return (score['compound'])
 
-def to_timestamp(datestring):
-	time_tuple = parsedate_tz(datestring.strip())
-	dt = datetime(*time_tuple[:6])
-	date_time = dt - timedelta(seconds=time_tuple[-1])
-	timestamp = int(datetime.timestamp(date_time))*1000
-	return timestamp
 
-
-today = date.today()
-today = today.isoformat()
 def clean_news():
-		now = datetime.now()-timedelta(12)
-	start_date = datetime.now()-timedelta(hours=13)
+	now = datetime.now()
+	start_date = datetime.now()-timedelta(hours=1)
 	all_articles = newsapi.get_everything(q='covid-19', 
 		from_param=start_date.isoformat()[0:19], 
 		to=now.isoformat()[0:19],
@@ -122,33 +121,31 @@ def clean_news():
 			title = str(article.get('title'))
 			content = str(article.get('content'))
 			published_date = str(article.get('publishedAt'))
+			published_date = datetime.strptime(published_date,"%Y-%m-%dT%H:%M:%SZ")
+			published_date = datetime.timestamp(published_date)*1000
+			author = str(article.get('author'))
 			sentiment = str(add_sentiment(content))
 			score = str(add_score(content))
-			aut_title = str(published_date + title)
+			aut_title = str(str(author)+ " " + str(title))
 			message_sql = articles(author=author, title=title, content=content, date=published_date, sentiment = sentiment, score= score,  unique_identify = aut_title)
 			Session = sessionmaker(bind=engine)
 			session = Session()
 			session.add(message_sql)
 			session.commit()
 
-t8 = python_operator(task_id = "collect news",
+t1 = PythonOperator(task_id = "collect_news",
 	python_callable = clean_news,
 	dag = dag)
 
 
-
-
-
 #Dashboard
 
-def dashboard_creation():
-	pass
-
-t11 = python_operator(task_id = "Dashboard"
-	python_callable = dashboard_creation,
+t2 = BashOperator(
+	task_id="run_jupyter_notebook",
+	bash_command = "papermill /Users/jkocher/Documents/projects/DataZCW-Final-Project/Final_Project/Dashboard/getting_df.ipynb /Users/jkocher/Documents/projects/DataZCW-Final-Project/Final_Project/Dashboard/report.ipynb",
 	dag = dag)
 
-
+t1 >> t2
 
 
 

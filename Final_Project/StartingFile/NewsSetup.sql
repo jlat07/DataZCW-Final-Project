@@ -27,14 +27,14 @@ DROP TABLE IF EXISTS `news`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `news` (
-  `author` varchar(250) DEFAULT NULL,
+  `author` longtext DEFAULT NULL,
   `title` varchar(500) DEFAULT NULL,
   `Content` longtext,
   `date` varchar(50) DEFAULT NULL,
   `sentiment` varchar(50) DEFAULT NULL,
   `score` varchar(50) DEFAULT NULL,
   `id` int NOT NULL AUTO_INCREMENT,
-  `unique_identify` varchar(200) DEFAULT NULL,
+  `unique_identify` longtext DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
