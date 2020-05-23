@@ -14,10 +14,7 @@ app = dash.Dash(__name__)
 app = dash.Dash(external_stylesheets=[dbc.themes.CYBORG])   # DARKLY, LUX, SOLAR, FLATLY, MINTY, CYBORG
 
 # ------------------------------------------------------------------------------
-# Import and clean data (importing csv into pandas)
-engine = create_engine('mysql+pymysql://root:zipcoder@localhost/twitter')
 
-twitter_df = pd.read_sql("sentiments", con = engine)
 # ------------------------------------------------------------------------------
 # App layout
 
