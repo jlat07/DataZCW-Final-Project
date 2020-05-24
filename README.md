@@ -3,9 +3,9 @@
 
 # NLP Covid-19 Sentiment Pipeline
 
-For our final project at Zip Code Wilmington, we chose to create a sentiment anlayis on COVID-19 for two different sources, the News API and Twitter API. For the news api we will be using Airflow to gather new articles every hour regarding COVID-19. For the Twitter API we have used Kafka to produce a stream of all tweets regarding COVID-19. 
+For our final project at Zip Code Wilmington, we chose to view sentiment analysis on COVID-19 for two different sources; Articles from a News API and Tweets from Twitter's API. For the news api we will be using Airflow to gather new articles every hour regarding COVID-19. For the Twitter API we have used Kafka to produce a stream of all tweets regarding COVID-19. 
 
-After aquiring this data we run it through a Vader model to analyze sentiment of the media and store it in a SQL database. Using airflow we will continously clean the data and and show our results using various visualization tools. Check out our pipeline below.  
+After acquiring this data we run it through a Vader model to analyze sentiment of both the media and tweets. Then store it in a SQL database. Using airflow we will continuously clean the data and and show our results using various visualization tools. Check out our pipeline below.  
 
 ---
 ### Pipeline Flow
