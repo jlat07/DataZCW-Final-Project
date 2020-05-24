@@ -94,16 +94,22 @@ dcc.Store(id='df', storage_type='memory'),
                      {"label": "100 Most Freq. Words", "value": 100}],
                  multi=False,
                  value=5,
-                 style={'width': "40%"}
+                 style={'width': "50%"}
                 ),
-                    ], lg=9),
+                    ], lg=0, xs=0,),
                     dbc.Col([
                         dbc.Label('Sentiment:'),
-                        dcc.Dropdown(id='misc_column1',
-                                    placeholder='Select Sentiment',
-                                    value='score'
-                        ),
-                    ], lg=3),
+                        dcc.Dropdown(id="select_sentiment",
+                placeholder='Select Sentiment',
+                 options=[
+                     {"label": "Positive", "value": 1},
+                     {"label": "Nuetral", "value": 0},
+                     {"label": "Negative", "value": -1}],
+                 multi=False,
+                 value=1,
+                 style={'width': "100%"}
+                ),
+                    ], lg=2),
                 ]),
                 html.Br(),
                 html.H2(id='word_freq_title',
