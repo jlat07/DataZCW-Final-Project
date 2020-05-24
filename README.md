@@ -74,4 +74,4 @@ To run this program we ask you execute the follow steps.
 -Open the visualation software and watch as results poor in on national sentiment towards COVID-19.  
 
 ---
-### [Link to original project requirements](https://www.linkedin.com/in/apoorva-shukla-mishra/)
+### [Link to original project requirements](https://github.com/Zipcoder/DataZCW-Final-Project)
