@@ -2,7 +2,6 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash_table import DataTable
 from dash_table.FormatTemplate import Format
-from matplotlib import rcParams
 from plotly.subplots import make_subplots
 from wordcloud import WordCloud, STOPWORDS
 import collections
@@ -52,25 +51,25 @@ app.layout = html.Div([
     dcc.Graph(id='word_freq_bar_chart', figure={})
 
                     ])
-html.Div([
+# html.Div([
 
-    html.H2("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
+#     html.H2("Covid-19 Sentiment Dasboard", style={'text-align': 'center'}),
 
-    dcc.Dropdown(id="select_sentiment",
-                 options=[
-                     {"label": "Positive", "value": 1},
-                     {"label": "Neutral", "value": 0},
-                     {"label": "Negative", "value": -1}],
-                 multi=False,
-                 value=1,
-                 style={'width': "40%"}
-                 ),
+#     dcc.Dropdown(id="select_sentiment",
+#                  options=[
+#                      {"label": "Positive", "value": 1},
+#                      {"label": "Neutral", "value": 0},
+#                      {"label": "Negative", "value": -1}],
+#                  multi=False,
+#                  value=1,
+#                  style={'width': "40%"}
+#                  ),
 
-    html.Div(id='sentiment_container', children=[]),
-    html.Br(),
+#     html.Div(id='sentiment_container', children=[]),
+#     html.Br(),
 
-    dcc.Graph(id='sentiment_map', figure={})
-])
+#     dcc.Graph(id='sentiment_map', figure={})
+# ])
 
 # ------------------------------------------------------------------------------
 # Connect the word freq bar chart with with Dash Components
@@ -126,35 +125,35 @@ def update_graph(option_select):
 # ------------------------------------------------------------------------------
 # Connect the sentiment heat map with with Dash Components
 
-@app.callback(
-    [Output(component_id='sentiment_container', component_property='children'),
-    Output(component_id='sentiment_map', component_property='figure')],
-    [Input(component_id='select_sentiment', component_property='value')]
-)
+# @app.callback(
+#     [Output(component_id='sentiment_container', component_property='children'),
+#     Output(component_id='sentiment_map', component_property='figure')],
+#     [Input(component_id='select_sentiment', component_property='value')]
+# )
 
-def update_graph(option_select):
-    print(option_select)
-    print(type(option_select))
+# def update_graph(option_select):
+#     print(option_select)
+#     print(type(option_select))
 
-    container = f"Current sentiment being shown: {option_select}"
+#     container = f"Current sentiment being shown: {option_select}"
 
-    dff = twitter_df.copy()
-    dff = dff[dff["score"] == option_select]
+#     dff = twitter_df.copy()
+#     dff = dff[dff["score"] == option_select]
 
-    fig = px.choropleth(
-            data_frame=dff,
-            locationmode="USA-states",
-            locations="state",
-            scope="usa",
-            color='score',
-            range_color=(-1, 1),
-            hover_data=['location', 'sentiment'],
-            color_continuous_scale=px.colors.sequential.YlOrRd,
-            labels={'sentiment': 'Sentiment'},
-            template='plotly_dark'  #['ggplot2', 'seaborn', 'simple_white', 'plotly', 'plotly_white', 'plotly_dark', 'presentation', 'xgridoff', 'ygridoff', 'gridon', 'none']
-    ) 
+#     fig = px.choropleth(
+#             data_frame=dff,
+#             locationmode="USA-states",
+#             locations="state",
+#             scope="usa",
+#             color='score',
+#             range_color=(-1, 1),
+#             hover_data=['location', 'sentiment'],
+#             color_continuous_scale=px.colors.sequential.YlOrRd,
+#             labels={'sentiment': 'Sentiment'},
+#             template='plotly_dark'  #['ggplot2', 'seaborn', 'simple_white', 'plotly', 'plotly_white', 'plotly_dark', 'presentation', 'xgridoff', 'ygridoff', 'gridon', 'none']
+#     ) 
 
-    return container, fig
+    # return container, fig
 
 # ------------------------------------------------------------------------------
 # Connect the  with Dash Components
