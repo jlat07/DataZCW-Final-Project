@@ -37,7 +37,7 @@ After acquiring this data we run it through a Vader model to analyze sentiment o
   <img src="https://media-exp1.licdn.com/dms/image/C4E03AQEOXCT1XIU8CQ/profile-displayphoto-shrink_400_400/0?e=1595462400&v=beta&t=iL7hRwG7zOuZ4N7tDhnYRPCYNNRcV21DJEx2bda3SMY" width="200" height="200" />  
     
 ### James Thompson  
-[GitHub](https://github.com/jlat07/JLAT_Portfolio)  
+[GitHub](https://jlat07.github.io/JLAT_Portfolio/)  
 [Connect on LinkedIn](https://www.linkedin.com/in/james-la-thompson/)
 
   - "Studied pyshics and math at Lincoln University. Previously worked in the Architectural Engineering and Construction (AEC) Industry as a Building Information Modeling Designer, doing value engineering by using Autodesk programs to create 3D models. Strong problem-solving skills and passionate about automating solutions using code."  
